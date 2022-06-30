@@ -35,8 +35,9 @@ class FilmControllerTest {
         Film newFilmOne = new Film("Forrest Gump", "runner",
                 LocalDate.of(1999, 10, 12), 67L);
         controller.create(newFilmOne);
-        final Film expectedFilm = new Film( "Forrest Gump", "runner",
+        Film expectedFilm = new Film( "Forrest Gump", "runner",
                 LocalDate.of(1999, 10, 12), 67L);
+        expectedFilm.setId(1L);
         Assertions.assertFalse(controller.getFilms().isEmpty());
         Assertions.assertEquals(1, controller.getFilms().size());
         Assertions.assertEquals(expectedFilm, controller.getFilms().get(newFilmOne.getId()));
@@ -115,14 +116,15 @@ class FilmControllerTest {
                 LocalDate.of(1998, 1, 1), 67L);
         controller.create(newFilmOne);
 
-        final Film newFilmTwo = new Film( "Home Alone – 2", "comedy",
+        Film newFilmTwo = new Film( "Home Alone – 2", "comedy",
                 LocalDate.of(1998, 1, 1), 67L);
+        newFilmTwo.setId(1L);
 
         controller.update(newFilmTwo);
 
         Assertions.assertFalse(controller.getFilms().isEmpty());
         Assertions.assertEquals(1, controller.getFilms().size());
-        Assertions.assertEquals(newFilmTwo, controller.getFilms().get(0L));
+        Assertions.assertEquals(newFilmTwo, controller.getFilms().get(1L));
     }
 
     @Test
