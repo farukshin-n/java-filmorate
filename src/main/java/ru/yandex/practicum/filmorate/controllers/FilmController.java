@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,10 +16,11 @@ import java.util.List;
 @Data
 @RestController
 public class FilmController {
+    private long id;
     private final HashMap<Long, Film> films = new HashMap<>();
 
     @PostMapping(value = "/films")
-    public Film create(@RequestBody @Valid Film film) {
+    public Film create(@RequestBody Film film) {
         if (film.getName().isBlank()) {
             throw new ValidationException("Film name is blank.");
         } else if (film.getDescription().length() > 200) {
@@ -29,9 +29,12 @@ public class FilmController {
             throw new ValidationException("Film is older than 28 December 1895.");
         } else if (film.getDuration() < 0) {
             throw new ValidationException("Film duration is not positive");
-        } else if (films.containsKey(film.getId())) {
-            throw new ValidationException("Film with such id is already exist in film list.");
+        }
+
+        if (films.containsValue(film)) {
+            throw new ValidationException("Such film is already existed.");
         } else {
+            film.setId(generateId());
             films.put(film.getId(), film);
             log.info("Film {} released {} was added with id {}.", film.getName(), film.getReleaseDate(), film.getId());
         }
@@ -39,7 +42,7 @@ public class FilmController {
     }
 
     @PutMapping("/films")
-    public Film update(@RequestBody @Valid Film film) throws FilmNotFoundException {
+    public Film update(@RequestBody Film film) throws FilmNotFoundException {
         if (film.getName().isBlank()) {
             throw new ValidationException("Film name is null.");
         } else if (film.getDescription().length() > 200) {
@@ -60,5 +63,9 @@ public class FilmController {
     @GetMapping("/films")
     public List<Film> getFilmList() {
         return new ArrayList<>(films.values());
+    }
+
+    private long generateId() {
+        return id += 1;
     }
 }

@@ -32,10 +32,10 @@ class FilmControllerTest {
     @Test
     void create_default() {
         init();
-        Film newFilmOne = new Film(1L, "Forrest Gump", "runner",
+        Film newFilmOne = new Film("Forrest Gump", "runner",
                 LocalDate.of(1999, 10, 12), 67L);
         controller.create(newFilmOne);
-        final Film expectedFilm = new Film(1L, "Forrest Gump", "runner",
+        final Film expectedFilm = new Film( "Forrest Gump", "runner",
                 LocalDate.of(1999, 10, 12), 67L);
         Assertions.assertFalse(controller.getFilms().isEmpty());
         Assertions.assertEquals(1, controller.getFilms().size());
@@ -44,7 +44,7 @@ class FilmControllerTest {
 
     @Test
     void create_withEmptyFilmName() {
-        Film newFilmOne = new Film(1L, "", "runner",
+        Film newFilmOne = new Film( "", "runner",
                 LocalDate.of(1999, 10, 12), 67L);
         Assertions.assertThrows(ValidationException.class, new Executable() {
             @Override
@@ -56,7 +56,7 @@ class FilmControllerTest {
         Assertions.assertThrows(NullPointerException.class, new Executable() {
             @Override
             public void execute() throws Throwable {
-                controller.create(new Film(1L, null, "Run, Forrest, Run",
+                controller.create(new Film( null, "Run, Forrest, Run",
                         LocalDate.of(1999, 10, 12), 67L));
             }
         });
@@ -72,7 +72,7 @@ class FilmControllerTest {
                 "historical events in the 20th-century United States. The film differs substantially from the novel " +
                 "by Winston Groom";
 
-        Film newFilmOne = new Film(1L, "Home Alone", longDescription,
+        Film newFilmOne = new Film( "Home Alone", longDescription,
                 LocalDate.of(1998, 1, 1), 67L);
 
         Assertions.assertThrows(ValidationException.class, new Executable() {
@@ -85,7 +85,7 @@ class FilmControllerTest {
 
     @Test
     void create_withOldDate() {
-        Film newFilmOne = new Film(1L, "Home Alone", "Run, Forrest, Run",
+        Film newFilmOne = new Film("Home Alone", "Run, Forrest, Run",
                 LocalDate.of(1800, 1, 1), 67L);
 
         Assertions.assertThrows(ValidationException.class, new Executable() {
@@ -98,7 +98,7 @@ class FilmControllerTest {
 
     @Test
     void create_withNegativeDuration() {
-        Film newFilmOne = new Film(1L, "Home Alone", "Run, Forrest, run",
+        Film newFilmOne = new Film( "Home Alone", "Run, Forrest, run",
                 LocalDate.of(1800, 1, 1), -67L);
 
         Assertions.assertThrows(ValidationException.class, new Executable() {
@@ -111,27 +111,27 @@ class FilmControllerTest {
 
     @Test
     void update_default() throws FilmNotFoundException {
-        Film newFilmOne = new Film(1L, "Home Alone", "comedy",
+        Film newFilmOne = new Film("Home Alone", "comedy",
                 LocalDate.of(1998, 1, 1), 67L);
         controller.create(newFilmOne);
 
-        final Film newFilmTwo = new Film(1L, "Home Alone – 2", "comedy",
+        final Film newFilmTwo = new Film( "Home Alone – 2", "comedy",
                 LocalDate.of(1998, 1, 1), 67L);
 
         controller.update(newFilmTwo);
 
         Assertions.assertFalse(controller.getFilms().isEmpty());
         Assertions.assertEquals(1, controller.getFilms().size());
-        Assertions.assertEquals(newFilmTwo, controller.getFilms().get(1L));
+        Assertions.assertEquals(newFilmTwo, controller.getFilms().get(0L));
     }
 
     @Test
     void update_withEmptyFilmName() throws FilmNotFoundException {
-        Film newFilmOne = new Film(1L, "Home Alone", "comedy",
+        Film newFilmOne = new Film( "Home Alone", "comedy",
                 LocalDate.of(1998, 1, 1), 67L);
         controller.create(newFilmOne);
 
-        final Film newFilmTwo = new Film(1L, "", "comedy",
+        final Film newFilmTwo = new Film("", "comedy",
                 LocalDate.of(1998, 1, 1), 67L);
 
         Assertions.assertThrows(ValidationException.class, new Executable() {
@@ -144,7 +144,7 @@ class FilmControllerTest {
 
     @Test
     void update_withLongDescription() {
-        Film newFilmOne = new Film(1L, "Home Alone", "comedy",
+        Film newFilmOne = new Film( "Home Alone", "comedy",
                 LocalDate.of(1998, 1, 1), 67L);
         controller.create(newFilmOne);
 
@@ -156,7 +156,7 @@ class FilmControllerTest {
                 "historical events in the 20th-century United States. The film differs substantially from the novel " +
                 "by Winston Groom";
 
-        final Film newFilmTwo = new Film(1L, "Home Alone – 2", longDescription,
+        final Film newFilmTwo = new Film( "Home Alone – 2", longDescription,
                 LocalDate.of(1998, 1, 1), 67L);
 
         Assertions.assertThrows(ValidationException.class, new Executable() {
@@ -169,11 +169,11 @@ class FilmControllerTest {
 
     @Test
     void update_withOldDate() {
-        Film newFilmOne = new Film(1L, "Home Alone", "comedy",
+        Film newFilmOne = new Film( "Home Alone", "comedy",
                 LocalDate.of(1998, 1, 1), 67L);
         controller.create(newFilmOne);
 
-        final Film newFilmTwo = new Film(1L, "Home Alone", "comedy",
+        final Film newFilmTwo = new Film( "Home Alone", "comedy",
                 LocalDate.of(1800, 1, 1), 67L);
 
         Assertions.assertThrows(ValidationException.class, new Executable() {
@@ -186,11 +186,11 @@ class FilmControllerTest {
 
     @Test
     void update_withNegativeDuration() {
-        Film newFilmOne = new Film(1L, "Home Alone", "comedy",
+        Film newFilmOne = new Film( "Home Alone", "comedy",
                 LocalDate.of(1998, 1, 1), 67L);
         controller.create(newFilmOne);
 
-        final Film newFilmTwo = new Film(1L, "Home Alone", "comedy",
+        final Film newFilmTwo = new Film("Home Alone", "comedy",
                 LocalDate.of(1999, 1, 1), -67L);
 
         Assertions.assertThrows(ValidationException.class, new Executable() {
