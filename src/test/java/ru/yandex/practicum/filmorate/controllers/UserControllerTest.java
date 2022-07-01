@@ -41,47 +41,6 @@ class UserControllerTest {
     }
 
     @Test
-    void create_withEmptyEmail() {
-        User testUser = new User("", "stonewall","Jackson",
-                LocalDate.of(1845, 12,1));
-
-        Assertions.assertThrows(ValidationException.class, new Executable() {
-            @Override
-            public void execute() throws Throwable {
-                controller.create(testUser);
-            }
-        });
-    }
-
-    @Test
-    void create_withWrongEmail() {
-        User testUser = new User("yandex", "stonewall","Jackson",
-                LocalDate.of(1845, 12,1));
-
-        Assertions.assertThrows(ValidationException.class, new Executable() {
-            @Override
-            public void execute() throws Throwable {
-                controller.create(testUser);
-            }
-        });
-
-        Assertions.assertTrue(controller.getUsers().isEmpty());
-    }
-
-    @Test
-    void create_withEmptyLogin() {
-        User testUser = new User( "yandex@yandex.ru", "", "Jackson",
-                LocalDate.of(1845, 12,1));
-
-        Assertions.assertThrows(ValidationException.class, new Executable() {
-            @Override
-            public void execute() throws Throwable {
-                controller.create(testUser);
-            }
-        });
-    }
-
-    @Test
     void create_withWrongLogin() {
         User testUser = new User("yandex@yandex.ru", "stone wall","Jackson",
                 LocalDate.of(1845, 12,1));
@@ -140,24 +99,6 @@ class UserControllerTest {
     }
 
     @Test
-    void update_withEmptyEmail() throws UserNotFoundException {
-        User testUser = new User("yandex@yandex.ru", "stonewall","Jackson",
-                LocalDate.of(1845, 12,1));
-
-        controller.create(testUser);
-
-        User updatedUser = new User( "", "stonewall111","Jackson",
-                LocalDate.of(1845, 12,1));
-
-        Assertions.assertThrows(ValidationException.class, new Executable() {
-            @Override
-            public void execute() throws Throwable {
-                controller.update(updatedUser);
-            }
-        });
-    }
-
-    @Test
     void update_withWrongEmail() {
         User testUser = new User("yandex@yandex.ru", "stonewall","Jackson",
                 LocalDate.of(1845, 12,1));
@@ -172,24 +113,6 @@ class UserControllerTest {
         final String savedLogin = controller.getUsers().get(1L).getLogin();
 
         Assertions.assertEquals(expectedLogin, savedLogin);
-    }
-
-    @Test
-    void update_withEmptyLogin() {
-        User testUser = new User( "yandex@yandex.ru", "stonewall","Jackson",
-                LocalDate.of(1845, 12,1));
-
-        controller.create(testUser);
-
-        User updatedUser = new User( "yandex@yandex.ru", "","Jackson",
-                LocalDate.of(1845, 12,1));
-
-        Assertions.assertThrows(ValidationException.class, new Executable() {
-            @Override
-            public void execute() throws Throwable {
-                controller.update(updatedUser);
-            }
-        });
     }
 
     @Test

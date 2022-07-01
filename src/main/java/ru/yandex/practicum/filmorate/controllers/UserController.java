@@ -21,17 +21,11 @@ public class UserController {
 
     @PostMapping("/users")
     public User create(@RequestBody User user) {
-        if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            throw new ValidationException("User email must not be null and must contain @." +
-                    " Check it and try again");
-        } else if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            throw new ValidationException("Check your login.");
-        } else if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("User's birthday is in future. Check it and try again.");
-        } else if (user.getName().isBlank()) {
+        validate(user);
+
+        if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-
         user.setId(generateId());
         users.put(user.getId(), user);
         log.info("User {} with id {} is added.", user.getLogin(), user.getId());
@@ -40,14 +34,9 @@ public class UserController {
 
     @PutMapping("/users")
     public User update(@RequestBody User user) throws UserNotFoundException {
-        if (user.getEmail().isBlank()) {
-            throw new ValidationException("User email must not be null and must contain @." +
-                    " Check it and try again");
-        } else if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            throw new ValidationException("Check your login.");
-        } else if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("User's birthday is in future. Check it and try again.");
-        } else if (users.containsKey(user.getId())) {
+        validate(user);
+
+        if (users.containsKey(user.getId())) {
             if (user.getName().isBlank()) {
                 user.setName(user.getLogin());
             }
@@ -62,6 +51,14 @@ public class UserController {
     @GetMapping("/users")
     public List<User> getUserList() {
         return new ArrayList<>(users.values());
+    }
+
+    private void validate(User user) {
+        if (user.getLogin().contains(" ")) {
+            throw new ValidationException("Check your login, is can't contain white space.");
+        } else if (user.getBirthday().isAfter(LocalDate.now())) {
+            throw new ValidationException("User's birthday is in future. Check it and try again.");
+        }
     }
 
     private long generateId() {
