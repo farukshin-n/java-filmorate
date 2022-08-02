@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.storages.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storages.UserStorage;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,7 +21,8 @@ public class UserService {
         this.storage = storage;
     }
 
-    public void addFriend(@Valid Long userAddingId, @Valid Long userAddedId) throws UserNotFoundException {
+    public void addFriend(@Valid @Positive Long userAddingId,
+                          @Valid @Positive Long userAddedId) throws UserNotFoundException {
         helpAddingFriend(userAddingId, userAddedId);
         helpAddingFriend(userAddedId, userAddingId);
     }
@@ -38,7 +40,8 @@ public class UserService {
         storage.updateUser(user1);
     }
 
-    public void deleteFriend(@Valid Long userAddingId, @Valid Long userAddedId) throws UserNotFoundException {
+    public void deleteFriend(@Valid @Positive Long userAddingId,
+                             @Valid @Positive Long userAddedId) throws UserNotFoundException {
         helpDeletingFriend(userAddingId, userAddedId);
         helpDeletingFriend(userAddedId, userAddingId);
     }
@@ -56,22 +59,19 @@ public class UserService {
         storage.updateUser(user1);
     }
 
-    public ArrayList<User> getMutualFriendsList(@Valid Long userAddingId, @Valid Long userAddedId) {
+    public ArrayList<User> getMutualFriendsList(@Valid @Positive Long userAddingId,
+                                                @Valid @Positive Long userAddedId) throws UserNotFoundException {
         InMemoryUserStorage userStorage = (InMemoryUserStorage) storage;
 
         User userAdding = userStorage.getUser(userAddingId);
         User userAdded = userStorage.getUser(userAddedId);
 
         Set<User> intersection = new HashSet<>(userAdding.getFriends());
-        if (!intersection.retainAll(userAdded.getFriends())) {
-            throw new FriendProcessingException(String.format(
-                    "Error during compiling mutual friends' list between %d and %d",
-                    userAdded.getId(), userAdding.getId()));
-        }
+        intersection.retainAll(userAdded.getFriends());
         return new ArrayList<>(intersection);
     }
 
-    public ArrayList<User> getFriendList(Long userId) {
+    public ArrayList<User> getFriendList(Long userId) throws UserNotFoundException {
         return new ArrayList<>(((InMemoryUserStorage) storage).getUser(userId).getFriends());
     }
 }

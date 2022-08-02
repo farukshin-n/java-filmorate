@@ -37,6 +37,11 @@ public class FilmController {
         return ((InMemoryFilmStorage) storage).getFilmList();
     }
 
+    @GetMapping("/films/{id}")
+    public Film handleGetFilm(@PathVariable Long id) {
+        return ((InMemoryFilmStorage) storage).getFilm(id);
+    }
+
     @PutMapping("/films/{id}/like/{userId}")
     public void handleAddLike(@PathVariable Long id, @PathVariable Long userId) throws FilmNotFoundException {
         service.addLike(id, userId);

@@ -39,6 +39,11 @@ public class UserController {
         return ((InMemoryUserStorage) storage).getUserList();
     }
 
+    @GetMapping("/users/{id}")
+    public User handleGetUser(@PathVariable Long id) throws UserNotFoundException {
+        return ((InMemoryUserStorage) storage).getUser(id);
+    }
+
     @PutMapping("/users/{id}/friends/{friendId}")
     public void handleAddFriend(@PathVariable Long id, @PathVariable Long friendId) throws UserNotFoundException {
         service.addFriend(id, friendId);
@@ -50,12 +55,12 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}/friends")
-    public ArrayList<User> handleGetFriendList(@PathVariable Long id) {
+    public ArrayList<User> handleGetFriendList(@PathVariable Long id) throws UserNotFoundException {
         return service.getFriendList(id);
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
-    public ArrayList<User> handleGetMutualFriendsList(@PathVariable Long id, @PathVariable Long otherId) {
+    public ArrayList<User> handleGetMutualFriendsList(@PathVariable Long id, @PathVariable Long otherId) throws UserNotFoundException {
         return service.getMutualFriendsList(id, otherId);
     }
 }
