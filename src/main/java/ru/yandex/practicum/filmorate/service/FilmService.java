@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.FilmServiceProcessingException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.FilmStorage;
 import ru.yandex.practicum.filmorate.storages.InMemoryFilmStorage;
 
@@ -17,32 +16,33 @@ public class FilmService {
     private final FilmStorage storage;
 
     @Autowired
-    public FilmService(InMemoryFilmStorage storage) {
+    public FilmService(FilmStorage storage) {
         this.storage = storage;
     }
 
-    public void addLike(Film film, User user) throws FilmNotFoundException {
-        if (!film.getLikes().add(user.getId())) {
+    public void addLike(Long filmId, Long userId) throws FilmNotFoundException {
+        Film film = ((InMemoryFilmStorage) storage).getFilm(filmId);
+        if (!film.getLikes().add(userId)) {
             throw new FilmServiceProcessingException(
-                    String.format("Like from user %l tp film %s not added.",
-                    user.getId(), film.getName()));
+                    String.format("Like from user %d tp film %s not added.", userId, film.getName()));
         }
         storage.updateFilm(film);
     }
 
-    public void deleteLike(Film film, User user) throws FilmNotFoundException {
-        if (!film.getLikes().remove(user.getId())) {
+    public void deleteLike(Long filmId, Long userId) throws FilmNotFoundException {
+        Film film = ((InMemoryFilmStorage) storage).getFilm(filmId);
+        if (!film.getLikes().remove(userId)) {
             throw new FilmServiceProcessingException(
-                    String.format("Like from user %l tp film %s not deleted.",
-                            user.getId(), film.getName()));
+                    String.format("Like from user %d tp film %s not deleted.",
+                            userId, film.getName()));
         }
         storage.updateFilm(film);
     }
 
-    public List<Film> getTenMostLikedFilms() {
+    public List<Film> getMostLikedFilms(Integer count) {
         return ((InMemoryFilmStorage) storage).getFilms().values().stream()
                 .sorted()
-                .limit(10)
+                .limit(count)
                 .collect(Collectors.toList());
     }
 }

@@ -19,5 +19,5 @@ public class User {
     @NonNull
     private String name;
     private final LocalDate birthday;
-    private final Set<Long> friends = new HashSet<>();
+    private final Set<User> friends = new HashSet<>();
 }

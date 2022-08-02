@@ -36,4 +36,19 @@ public class FilmController {
     public List<Film> getFilmList() {
         return ((InMemoryFilmStorage) storage).getFilmList();
     }
+
+    @PutMapping("/films/{id}/like/{userId}")
+    public void handleAddLike(@PathVariable Long id, @PathVariable Long userId) throws FilmNotFoundException {
+        service.addLike(id, userId);
+    }
+
+    @DeleteMapping("/films/{id}/like/{userId}")
+    public void handleDeleteLike(@PathVariable Long id, @PathVariable Long userId) throws FilmNotFoundException {
+        service.deleteLike(id, userId);
+    }
+
+    @GetMapping("/films/popular?count={count}")
+    public List<Film> handleGetMostLikedFilms(@RequestParam(required = false, defaultValue = "10") Integer count) {
+        return service.getMostLikedFilms(count);
+    }
 }
