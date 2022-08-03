@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.Data;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.FriendProcessingException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+@Data
 @Service
 public class UserService {
     private final UserStorage storage;
@@ -28,10 +30,8 @@ public class UserService {
     }
 
     private void helpAddingFriend(Long firstUserId, Long secondUserId) throws UserNotFoundException {
-        InMemoryUserStorage userStorage = (InMemoryUserStorage) storage;
-
-        User user1 = userStorage.getUser(firstUserId);
-        User user2 = userStorage.getUser(secondUserId);
+        User user1 = storage.getUser(firstUserId);
+        User user2 = storage.getUser(secondUserId);
 
         if (!user1.getFriends().add(user2)) {
             throw new FriendProcessingException(String.format("User %d not added to %d friends' list.",
@@ -47,10 +47,8 @@ public class UserService {
     }
 
     private void helpDeletingFriend(Long firstUserId, Long secondUserId) throws UserNotFoundException {
-        InMemoryUserStorage userStorage = (InMemoryUserStorage) storage;
-
-        User user1 = userStorage.getUser(firstUserId);
-        User user2 = userStorage.getUser(secondUserId);
+        User user1 = storage.getUser(firstUserId);
+        User user2 = storage.getUser(secondUserId);
 
         if (!user1.getFriends().remove(user2)) {
             throw new FriendProcessingException(String.format("User %d not deleted from user %d friends' list.",
@@ -61,10 +59,8 @@ public class UserService {
 
     public ArrayList<User> getMutualFriendsList(@Valid @Positive Long userAddingId,
                                                 @Valid @Positive Long userAddedId) throws UserNotFoundException {
-        InMemoryUserStorage userStorage = (InMemoryUserStorage) storage;
-
-        User userAdding = userStorage.getUser(userAddingId);
-        User userAdded = userStorage.getUser(userAddedId);
+        User userAdding = storage.getUser(userAddingId);
+        User userAdded = storage.getUser(userAddedId);
 
         Set<User> intersection = new HashSet<>(userAdding.getFriends());
         intersection.retainAll(userAdded.getFriends());
@@ -72,6 +68,6 @@ public class UserService {
     }
 
     public ArrayList<User> getFriendList(Long userId) throws UserNotFoundException {
-        return new ArrayList<>(((InMemoryUserStorage) storage).getUser(userId).getFriends());
+        return new ArrayList<>(storage.getUser(userId).getFriends());
     }
 }

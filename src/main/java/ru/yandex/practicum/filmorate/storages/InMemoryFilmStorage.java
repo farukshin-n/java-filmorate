@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.time.LocalDate;
 import java.util.*;
 
-@Data
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage{
@@ -46,10 +45,17 @@ public class InMemoryFilmStorage implements FilmStorage{
         return film;
     }
 
+    @Override
     public Film getFilm(Long id) {
         return films.get(id);
     }
 
+    @Override
+    public Map<Long, Film> getFilms() {
+        return films;
+    }
+
+    @Override
     public List<Film> getFilmList() {
         return new ArrayList<>(films.values());
     }

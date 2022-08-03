@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storages.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storages.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,33 +13,31 @@ import java.util.List;
 @Data
 @RestController
 public class UserController {
-    private final UserStorage storage;
     private final UserService service;
 
     @Autowired
-    public UserController(UserStorage storage, UserService service) {
-        this.storage = storage;
+    public UserController(UserService service) {
         this.service = service;
     }
 
     @PostMapping("/users")
     public User create(@RequestBody User user) {
-        return storage.createUser(user);
+        return service.getStorage().createUser(user);
     }
 
     @PutMapping("/users")
     public User update(@RequestBody User user) throws UserNotFoundException {
-        return storage.updateUser(user);
+        return service.getStorage().updateUser(user);
     }
 
     @GetMapping("/users")
     public List<User> getUserList() {
-        return ((InMemoryUserStorage) storage).getUserList();
+        return service.getStorage().getUserList();
     }
 
     @GetMapping("/users/{id}")
     public User handleGetUser(@PathVariable Long id) throws UserNotFoundException {
-        return ((InMemoryUserStorage) storage).getUser(id);
+        return service.getStorage().getUser(id);
     }
 
     @PutMapping("/users/{id}/friends/{friendId}")

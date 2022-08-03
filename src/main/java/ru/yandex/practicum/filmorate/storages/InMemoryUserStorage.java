@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +54,7 @@ public class InMemoryUserStorage implements UserStorage{
         return user;
     }
 
+    @Override
     public User getUser(Long id) throws UserNotFoundException {
         if (id < 0) {
             throw new UserNotFoundException(String.format("Id %d less than zero.", id));
@@ -62,6 +62,7 @@ public class InMemoryUserStorage implements UserStorage{
         return users.get(id);
     }
 
+    @Override
     public List<User> getUserList() {
         return new ArrayList<>(users.values());
     }
