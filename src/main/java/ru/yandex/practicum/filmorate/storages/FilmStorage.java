@@ -13,7 +13,7 @@ public interface FilmStorage {
 
     public Film updateFilm(Film film) throws FilmNotFoundException;
 
-    public Film getFilm(Long id);
+    public Film getFilm(Long id) throws FilmNotFoundException;
 
     public Map<Long, Film> getFilms();
 

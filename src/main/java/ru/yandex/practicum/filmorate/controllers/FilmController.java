@@ -36,7 +36,7 @@ public class FilmController {
     }
 
     @GetMapping("/films/{id}")
-    public Film handleGetFilm(@PathVariable Long id) {
+    public Film handleGetFilm(@PathVariable Long id) throws FilmNotFoundException {
         return service.getFilm(id);
     }
 

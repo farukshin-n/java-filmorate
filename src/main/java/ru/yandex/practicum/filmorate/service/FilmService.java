@@ -34,7 +34,7 @@ public class FilmService {
         return storage.getFilmList();
     }
 
-    public Film getFilm(Long id) {
+    public Film getFilm(Long id) throws FilmNotFoundException {
         return storage.getFilm(id);
     }
 

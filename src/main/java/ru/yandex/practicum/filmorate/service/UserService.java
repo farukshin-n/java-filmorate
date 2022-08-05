@@ -30,7 +30,7 @@ public class UserService {
         helpAddingFriend(userAddedId, userAddingId);
     }
 
-    public User getUser(Long id) {
+    public User getUser(Long id) throws UserNotFoundException {
         return storage.getUser(id);
     }
 

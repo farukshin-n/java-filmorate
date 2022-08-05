@@ -46,7 +46,11 @@ public class InMemoryFilmStorage implements FilmStorage{
     }
 
     @Override
-    public Film getFilm(Long id) {
+    public Film getFilm(Long id) throws FilmNotFoundException {
+        if (id < 0) {
+            throw new FilmNotFoundException(String.format("Id %d iw wrong. It must be more than zero.", id));
+        }
+
         return films.get(id);
     }
 
