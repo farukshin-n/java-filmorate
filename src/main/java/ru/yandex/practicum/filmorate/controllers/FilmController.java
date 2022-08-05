@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controllers;
 
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
@@ -9,6 +10,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import java.util.List;
 
+@Data
 @RestController
 public class FilmController {
     private final FilmService service;
@@ -20,22 +22,22 @@ public class FilmController {
 
     @PostMapping(value = "/films")
     public Film createFilm(@RequestBody @Valid Film film) {
-        return service.getStorage().createFilm(film);
+        return service.createFilm(film);
     }
 
     @PutMapping("/films")
     public Film updateFilm(@RequestBody @Valid Film film) throws FilmNotFoundException {
-        return service.getStorage().updateFilm(film);
+        return service.updateFilm(film);
     }
 
     @GetMapping("/films")
     public List<Film> getFilmList() {
-        return service.getStorage().getFilmList();
+        return service.getFilmList();
     }
 
     @GetMapping("/films/{id}")
     public Film handleGetFilm(@PathVariable Long id) {
-        return service.getStorage().getFilm(id);
+        return service.getFilm(id);
     }
 
     @PutMapping("/films/{id}/like/{userId}")

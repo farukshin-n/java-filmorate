@@ -13,7 +13,7 @@ public interface UserStorage {
 
     public User updateUser(User user) throws UserNotFoundException;
 
-    public User getUser(Long id) throws UserNotFoundException;
+    public User getUser(Long id);
 
     public List<User> getUserList();
 }

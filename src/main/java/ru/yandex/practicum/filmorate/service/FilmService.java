@@ -22,6 +22,22 @@ public class FilmService {
         this.storage = storage;
     }
 
+    public Film createFilm(Film film) {
+        return storage.createFilm(film);
+    }
+
+    public Film updateFilm(Film film) throws FilmNotFoundException {
+        return storage.updateFilm(film);
+    }
+
+    public List<Film> getFilmList() {
+        return storage.getFilmList();
+    }
+
+    public Film getFilm(Long id) {
+        return storage.getFilm(id);
+    }
+
     public void addLike(Long filmId, Long userId) throws FilmNotFoundException {
         Film film = storage.getFilm(filmId);
         if (!film.getLikes().add(userId)) {

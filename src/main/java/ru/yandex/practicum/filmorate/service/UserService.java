@@ -12,6 +12,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -27,6 +28,22 @@ public class UserService {
                           @Valid @Positive Long userAddedId) throws UserNotFoundException {
         helpAddingFriend(userAddingId, userAddedId);
         helpAddingFriend(userAddedId, userAddingId);
+    }
+
+    public User getUser(Long id) {
+        return storage.getUser(id);
+    }
+
+    public User createUser(User user) {
+        return storage.createUser(user);
+    }
+
+    public User updateUser(User user) throws UserNotFoundException {
+        return storage.updateUser(user);
+    }
+
+    public List<User> getUserList() {
+        return storage.getUserList();
     }
 
     private void helpAddingFriend(Long firstUserId, Long secondUserId) throws UserNotFoundException {
