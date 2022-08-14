@@ -1,9 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.interfaces.FriendshipStorage;
 
@@ -11,19 +10,14 @@ import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
-@Data
-@Service
+@RequiredArgsConstructor
+@Service("friendService")
 public class FriendshipService {
     private final FriendshipStorage friendshipStorage;
 
-    @Autowired
-    public FriendshipService(@Qualifier("dbFriendship") FriendshipStorage friendshipStorage) {
-        this.friendshipStorage = friendshipStorage;
-    }
-
-    public void addFriendship(@Valid @Positive Long id,
-                              @Valid @Positive Long friendId) {
-        friendshipStorage.addFriendship(id, friendId);
+    public Friendship addFriendship(@Valid @Positive Long id,
+                                    @Valid @Positive Long friendId) {
+        return friendshipStorage.addFriendship(id, friendId);
     }
 
     public void deleteFriendship(@Valid @Positive Long id,

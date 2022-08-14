@@ -8,16 +8,18 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-@Getter
+@EqualsAndHashCode
 @Setter
+@Getter
+@RequiredArgsConstructor
 @AllArgsConstructor
 public class User {
     private long id = 0L;
-    @Email @NotBlank
-    private final String email;
     @NotBlank
     private final String login;
     @NonNull
     private String name;
+    @Email @NotBlank
+    private final String email;
     private final LocalDate birthday;
 }

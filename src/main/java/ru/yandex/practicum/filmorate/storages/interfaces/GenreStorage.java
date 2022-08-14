@@ -8,4 +8,6 @@ public interface GenreStorage {
     public List<Genre> getGenreList();
 
     public Genre getGenre(Long genreId);
+
+    public List<Genre> loadFilmGenre(Long filmId);
 }

@@ -8,10 +8,6 @@ import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.interfaces.FriendshipStorage;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Positive;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 @Slf4j
@@ -24,10 +20,11 @@ public class FriendshipDbStorage implements FriendshipStorage {
     }
 
     @Override
-    public void addFriendship(Long id, Long friendId) {
+    public Friendship addFriendship(Long id, Long friendId) {
         String sqlQuery = "insert into friends(friend_one, friend_two) " +
                 "values(?, ?)";
         jdbcTemplate.update(sqlQuery, id, friendId);
+        return new Friendship(id, friendId);
     }
 
     @Override
@@ -55,15 +52,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
                 " union select u.user_id, u.email, u.login, u.name, u.birthday " +
                 "from friends f join users u on f.friend_two=u.user_id where f.friend_one=" + userId;
 
-        return jdbcTemplate.query(sqlQuery, this::makeUser);
-    }
-
-    private User makeUser(ResultSet rs, int rowNum) throws SQLException {
-        return new User(rs.getLong("user_id"),
-                rs.getString("email"),
-                rs.getString("login"),
-                rs.getString("name"),
-                rs.getDate("birthday").toLocalDate());
+        return jdbcTemplate.query(sqlQuery, UserDbStorage::makeUser);
     }
 
     @Override

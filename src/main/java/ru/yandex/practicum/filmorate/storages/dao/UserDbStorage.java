@@ -1,36 +1,49 @@
 package ru.yandex.practicum.filmorate.storages.dao;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.interfaces.UserStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
 @Component("dbUser")
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Repository
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
     @Override
     public User createUser(User user) {
-        String sqlQuery = "insert into users(user_id, email, login, name, birthday) " +
-                "values(?, ?, ?, ?, ?)";
+        String sqlQuery = "insert into users(login, name, email, birthday) values(?, ?, ?, ?)";
 
-        jdbcTemplate.update(sqlQuery,
-                user.getId(),
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"user_id"});
+            stmt.setString(1, user.getLogin());
+            stmt.setString(2, user.getName());
+            stmt.setString(3, user.getEmail());
+            final LocalDate birthday = user.getBirthday();
+            if (birthday == null) {
+                stmt.setNull(4, Types.DATE);
+            } else {
+                stmt.setDate(4, Date.valueOf(birthday));
+            }
+            return stmt;
+        }, keyHolder);
+
+        user.setId(keyHolder.getKey().longValue());
 
         return user;
     }
@@ -42,15 +55,15 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User updateUser(User user) throws UserNotFoundException {
+    public User updateUser(User user) {
         String sqlQuery = "update users set " +
-                "email = ?, login = ?, name = ?, birthday = ? " +
+                "login = ?, name = ?, email = ?, birthday = ? " +
                 "where user_id = ?";
 
         jdbcTemplate.update(sqlQuery,
-                user.getEmail(),
                 user.getLogin(),
                 user.getName(),
+                user.getEmail(),
                 user.getBirthday(),
                 user.getId());
 
@@ -58,22 +71,23 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User getUser(Long id) throws UserNotFoundException {
-        String sqlQuery = "select * from users where id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::makeUser, id);
+    public User getUser(Long id) {
+        String sqlQuery = "select user_id, login, name, email, birthday " +
+                "from users where user_id = ?";
+        return jdbcTemplate.queryForObject(sqlQuery, UserDbStorage::makeUser, id);
     }
 
-    private User makeUser(ResultSet rs, int rowNum) throws SQLException {
+    static User makeUser(ResultSet rs, int rowNum) throws SQLException {
         return new User(rs.getLong("user_id"),
-                rs.getString("email"),
                 rs.getString("login"),
                 rs.getString("name"),
+                rs.getString("email"),
                 rs.getDate("birthday").toLocalDate());
     }
 
     @Override
     public List<User> getUserList() {
-        String sqlQuery = "select user_id, email, login, name, birthday from users";
-        return jdbcTemplate.query(sqlQuery, this::makeUser);
+        String sqlQuery = "select user_id, login, name, email, birthday from users";
+        return jdbcTemplate.query(sqlQuery, UserDbStorage::makeUser);
     }
 }

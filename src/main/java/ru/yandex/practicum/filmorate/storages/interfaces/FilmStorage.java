@@ -19,6 +19,4 @@ public interface FilmStorage {
     public List<Film> getFilmList();
 
     public List<Film> getMostLikedFilms(Integer count);
-
-    public List<Genre> loadFilmGenre(Long filmId);
 }

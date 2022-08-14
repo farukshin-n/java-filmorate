@@ -76,9 +76,4 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .limit(count)
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public List<Genre> loadFilmGenre(Long filmId) {
-        return null;
-    }
 }

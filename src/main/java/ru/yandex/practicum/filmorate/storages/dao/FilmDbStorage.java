@@ -1,26 +1,30 @@
 package ru.yandex.practicum.filmorate.storages.dao;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.FilmServiceProcessingException;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storages.interfaces.FilmStorage;
+import ru.yandex.practicum.filmorate.storages.interfaces.GenreStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Component("dbFilm")
+@Repository
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final GenreStorage genreStorage;
 
     @Override
     public Film createFilm(Film film) {
@@ -36,24 +40,15 @@ public class FilmDbStorage implements FilmStorage {
                 film.getReleaseDate(),
                 film.getDuration());
 
-        film.setGenre(loadFilmGenre(film.getId()));
+        List<Genre> newGenres = film.getGenre();
+        for (Genre genre : newGenres) {
+            String genreSqlQuery = "update film_genre set film_id = ?, genre_id = ? if conflict do nothing";
+            jdbcTemplate.update(genreSqlQuery, film.getId(), genre.getGenreId());
+        }
 
         return film;
     }
 
-    @Override
-    public List<Genre> loadFilmGenre(Long filmId) {
-        String sqlQuery = "select genre_id, genre_name from genre " +
-                "where genre_id in " +
-                "(select genre_id from film_genre where film_id = ?)";
-
-        return jdbcTemplate.query(sqlQuery, this::makeGenre, filmId);
-    }
-
-    private Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {
-        return new Genre(rs.getLong("genre_id"),
-                rs.getString("genre_name"));
-    }
 
     @Override
     public void deleteFilm(Film film) {
@@ -62,12 +57,16 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film updateFilm(Film film) {
-        String sqlQuery = "update films set " +
+    public Film updateFilm(Film film) throws FilmNotFoundException {
+        if (film == null) {
+            throw new FilmNotFoundException("Film is null");
+        }
+
+        String sqlQueryFilms = "update films set " +
                 "name = ?, description = ?, mpa_id = ?, release_date = ?, duration = ? " +
                 "where film_id = ?";
 
-        jdbcTemplate.update(sqlQuery,
+        jdbcTemplate.update(sqlQueryFilms,
                 film.getName(),
                 film.getDescription(),
                 film.getRatingMPA(),
@@ -75,7 +74,11 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDuration(),
                 film.getId());
 
-        film.setGenre(loadFilmGenre(film.getId()));
+        List<Genre> newGenres = film.getGenre();
+        for (Genre genre : newGenres) {
+            String genreSqlQuery = "update film_genre set film_id = ?, genre_id = ?";
+            jdbcTemplate.update(genreSqlQuery, film.getId(), genre.getGenreId());
+        }
 
         return film;
     }
@@ -88,7 +91,7 @@ public class FilmDbStorage implements FilmStorage {
                 "where f.film_id = ?";
 
         Film resultFilm = jdbcTemplate.queryForObject(sqlQuery, this::makeFilm, id);
-        resultFilm.setGenre(loadFilmGenre(id));
+        resultFilm.setGenre(genreStorage.loadFilmGenre(id));
 
         return resultFilm;
     }
@@ -97,11 +100,11 @@ public class FilmDbStorage implements FilmStorage {
         Film resultFilm = new Film(rs.getLong("film_id"),
                 rs.getString("name"),
                 rs.getString("description"),
-                rs.getString("mpa_name"),
+                rs.getLong("mpa_id"),
                 rs.getDate("release_date").toLocalDate(),
                 rs.getLong("duration"));
 
-        resultFilm.setGenre(loadFilmGenre(resultFilm.getId()));
+        resultFilm.setGenre(genreStorage.loadFilmGenre(resultFilm.getId()));
 
         return resultFilm;
     }

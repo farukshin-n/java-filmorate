@@ -19,7 +19,7 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public List<Mpa> getMpaList() {
-        String sqlQuery = "select mpa_name from mpa";
+        String sqlQuery = "select mpa_id, mpa_name from mpa";
         return jdbcTemplate.query(sqlQuery, this::makeMpa);
     }
 
@@ -30,7 +30,7 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public Mpa getMpa(Long mpaId) {
-        String sqlQuery = "select mpa_name from mpa where mpa_id = ?";
+        String sqlQuery = "select mpa_id, mpa_name from mpa where mpa_id = ?";
         return jdbcTemplate.queryForObject(sqlQuery, this::makeMpa, mpaId);
     }
 }

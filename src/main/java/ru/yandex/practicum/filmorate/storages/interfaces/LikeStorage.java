@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.List;
 
 public interface LikeStorage {
-    public void addLike(Long filmId, Long userId);
+    public Like addLike(Long filmId, Long userId);
 
     public void deleteLike(Long filmId, Long userId);
 }

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -18,13 +19,14 @@ public class UserController {
     private final FriendshipService friendshipService;
 
     @Autowired
-    public UserController(UserService service, FriendshipService friendshipService) {
+    public UserController(@Qualifier("userService") UserService service,
+                          @Qualifier("friendService") FriendshipService friendshipService) {
         this.service = service;
         this.friendshipService = friendshipService;
     }
 
     @PostMapping("/users")
-    public User create(@RequestBody User user) {
+    public User create(@RequestBody User user) throws UserNotFoundException {
         return service.createUser(user);
     }
 

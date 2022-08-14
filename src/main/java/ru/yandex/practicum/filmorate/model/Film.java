@@ -19,7 +19,7 @@ public class Film {
     @Size(max=200)
     private final String description;
     private List<Genre> genre;
-    private final String ratingMPA;
+    private final Long ratingMPA;
     private final LocalDate releaseDate;
     @Positive
     private final Long duration;

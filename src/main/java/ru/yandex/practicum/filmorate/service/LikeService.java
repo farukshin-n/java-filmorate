@@ -22,8 +22,8 @@ public class LikeService {
         this.likeStorage = likeStorage;
     }
 
-    public void addLike(Long filmId, Long userId) {
-        likeStorage.addLike(filmId, userId);
+    public Like addLike(Long filmId, Long userId) {
+        return likeStorage.addLike(filmId, userId);
     }
 
     public void deleteLike(Long filmId, Long userId) {
