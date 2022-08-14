@@ -1,34 +1,28 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Data;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
-@Data
-public class Film implements Comparable<Film> {
-    private Long id;
+@Setter
+@Getter
+@AllArgsConstructor
+@RequiredArgsConstructor
+public class Film {
+    private final Long id;
     @NotBlank
     private final String name;
     @Size(max=200)
     private final String description;
+    private List<Genre> genre;
+    private final String ratingMPA;
     private final LocalDate releaseDate;
     @Positive
     private final Long duration;
-    private final Set<Long> likes = new HashSet<>();
 
-    @Override
-    public int compareTo(Film o) {
-        if (likes.size() > o.likes.size()) {
-            return -1;
-        } else if (likes.size() == o.likes.size()) {
-            return 0;
-        } else {
-            return 1;
-        }
-    }
+
 }

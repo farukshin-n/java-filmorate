@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storages;
+package ru.yandex.practicum.filmorate.storages.inmemory;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storages.interfaces.UserStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,8 +15,8 @@ import java.util.List;
 
 @Data
 @Slf4j
-@Component
-public class InMemoryUserStorage implements UserStorage{
+@Component("inMemoryUser")
+public class InMemoryUserStorage implements UserStorage {
     private long id = 0L;
     private final HashMap<Long, User> users = new HashMap<>();
 
