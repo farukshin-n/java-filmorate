@@ -30,19 +30,14 @@ public class UserDbStorage implements UserStorage {
     public User createUser(User user) {
         String sqlQuery = "insert into users(login, name, email, birthday) values(?, ?, ?, ?)";
 
-        KeyHolder keyHolder = new   GeneratedKeyHolder();
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"user_id"});
             stmt.setString(1, user.getLogin());
             stmt.setString(2, user.getName());
             stmt.setString(3, user.getEmail());
-            final LocalDate birthday = user.getBirthday();
-            if (birthday == null) {
-                stmt.setNull(4, Types.DATE);
-            } else {
-                stmt.setDate(4, Date.valueOf(birthday));
-            }
+            stmt.setDate(4, Date.valueOf(user.getBirthday()));
             return stmt;
         }, keyHolder);
 
@@ -76,13 +71,13 @@ public class UserDbStorage implements UserStorage {
         }
 
         log.info("User {} with email {} is updated.", user.getLogin(), user.getEmail());
-        return user;
+        return getUser(user.getId());
     }
 
     @Override
     public User getUser(Long id) {
         int checkUser = jdbcTemplate.update(
-                "update users set user_id=? where user_id=?");
+                "update users set user_id=? where user_id=?", id, id);
         if (checkUser == 0) {
             return null;
         }

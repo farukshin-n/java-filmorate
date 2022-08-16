@@ -18,7 +18,7 @@ public class UserController {
     private final FriendshipService friendshipService;
 
     @PostMapping("/users")
-    public User create(@RequestBody @Valid User user) {
+    public User create(@RequestBody User user) {
         return userService.createUser(user);
     }
 
