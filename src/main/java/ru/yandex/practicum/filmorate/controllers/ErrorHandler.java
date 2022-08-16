@@ -21,14 +21,14 @@ public class ErrorHandler {
         return new ErrorResponse("Validation error", e.getMessage());
     }
 
-    @ExceptionHandler({FilmNotFoundException.class, UserNotFoundException.class})
+    @ExceptionHandler(SubstanceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFoundCases(IOException e) {
+    public ErrorResponse handleNotFoundCases(RuntimeException e) {
         log.info("404 {}", e.getMessage(), e);
         return new ErrorResponse("Object not found", e.getMessage());
     }
 
-    @ExceptionHandler({FilmServiceProcessingException.class, FriendProcessingException.class})
+    @ExceptionHandler(ProcessingException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleInternalErrors(RuntimeException e) {
         log.info("500 {}", e.getMessage(), e);

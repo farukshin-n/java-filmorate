@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.exceptions.SubstanceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.GenreService;
 
@@ -26,7 +27,7 @@ public class GenreController {
     }
 
     @GetMapping("/genres/{id}")
-    public Genre handleGetGenre(@PathVariable Long id) {
+    public Genre handleGetGenre(@PathVariable Long id) throws SubstanceNotFoundException {
         return genreService.getGenre(id);
     }
 }

@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.storages.inmemory;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.SubstanceNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -33,23 +33,23 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film updateFilm(Film film) throws FilmNotFoundException {
+    public Film updateFilm(Film film) throws SubstanceNotFoundException {
         validate(film);
 
         if (films.containsKey(film.getId())) {
             films.put(film.getId(), film);
             log.info("Film {} released {} with id {} was updated.", film.getName(), film.getReleaseDate(), film.getId());
         } else {
-            throw new FilmNotFoundException("There wasn't such film in film list.");
+            throw new SubstanceNotFoundException("There wasn't such film in film list.");
         }
 
         return film;
     }
 
     @Override
-    public Film getFilm(Long id) throws FilmNotFoundException {
+    public Film getFilm(Long id) throws SubstanceNotFoundException {
         if (id < 0) {
-            throw new FilmNotFoundException(String.format("Id %d iw wrong. It must be more than zero.", id));
+            throw new SubstanceNotFoundException(String.format("Id %d iw wrong. It must be more than zero.", id));
         }
 
         return films.get(id);

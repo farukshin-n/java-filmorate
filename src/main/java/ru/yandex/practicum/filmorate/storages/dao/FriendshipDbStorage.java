@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.storages.dao;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.FriendProcessingException;
+import ru.yandex.practicum.filmorate.exceptions.ProcessingException;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.interfaces.FriendshipStorage;
@@ -43,7 +43,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
     @Override
     public List<User> getFriendsOfUser(Long userId) {
         if (userId == null || userId <= 0) {
-            throw new FriendProcessingException(String.format(
+            throw new ProcessingException(String.format(
                     "Parameter %s is less than or equal zero or equal null.",
                     userId));
         }

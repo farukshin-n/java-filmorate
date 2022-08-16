@@ -4,8 +4,7 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.FriendProcessingException;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.SubstanceNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.interfaces.UserStorage;
 
@@ -21,25 +20,29 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    public User getUser(Long id) throws UserNotFoundException {
+    public User getUser(Long id) throws SubstanceNotFoundException {
+        if (id < 0) {
+            throw new SubstanceNotFoundException(String.format("Id %d is less than zero", id));
+        }
+
         final User user = userStorage.getUser(id);
 
         if (user == null) {
-            throw new UserNotFoundException("User not found");
+            throw new SubstanceNotFoundException("User not found");
         }
 
         return user;
     }
 
-    public User createUser(User user) throws UserNotFoundException {
+    public User createUser(User user) {
         return userStorage.createUser(user);
     }
 
-    public User updateUser(User user) throws UserNotFoundException {
+    public User updateUser(User user) {
         final User resultUser = userStorage.getUser(user.getId());
 
         if (resultUser == null) {
-            throw new UserNotFoundException(String.format("User %s not found in database.", user.getId()));
+            throw new SubstanceNotFoundException(String.format("User %s not found in database.", user.getId()));
         }
 
         return userStorage.updateUser(user);

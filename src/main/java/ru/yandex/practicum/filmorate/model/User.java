@@ -14,12 +14,11 @@ import java.util.Set;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class User {
-    private long id = 0L;
+    private long id;
     @NotBlank
     private final String login;
-    @NonNull
     private String name;
-    @Email @NotBlank
+    @Email
     private final String email;
     private final LocalDate birthday;
 }

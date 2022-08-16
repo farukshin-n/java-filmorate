@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storages.interfaces;
 
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.SubstanceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
@@ -12,11 +12,11 @@ public interface FilmStorage {
 
     public void deleteFilm(Film film);
 
-    public Film updateFilm(Film film) throws FilmNotFoundException;
+    public Film updateFilm(Film film) throws SubstanceNotFoundException;
 
-    public Film getFilm(Long id) throws FilmNotFoundException;
+    public Film getFilm(Long id) throws SubstanceNotFoundException;
 
-    public List<Film> getFilmList();
+    public List<Film> getFilmList() throws SubstanceNotFoundException;
 
     public List<Film> getMostLikedFilms(Integer count);
 }

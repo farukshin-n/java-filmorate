@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storages.dao;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Like;
@@ -10,13 +11,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Component("dbLike")
 public class LikeDbStorage implements LikeStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    public LikeDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public Like addLike(Long filmId, Long userId) {

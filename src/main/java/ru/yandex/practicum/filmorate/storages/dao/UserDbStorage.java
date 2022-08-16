@@ -3,11 +3,14 @@ package ru.yandex.practicum.filmorate.storages.dao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exceptions.ProcessingException;
+import ru.yandex.practicum.filmorate.exceptions.SubstanceNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.interfaces.UserStorage;
 
@@ -27,7 +30,7 @@ public class UserDbStorage implements UserStorage {
     public User createUser(User user) {
         String sqlQuery = "insert into users(login, name, email, birthday) values(?, ?, ?, ?)";
 
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        KeyHolder keyHolder = new   GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"user_id"});
@@ -45,6 +48,7 @@ public class UserDbStorage implements UserStorage {
 
         user.setId(keyHolder.getKey().longValue());
 
+        log.info("User {} with id {} is added.", user.getLogin(), user.getId());
         return user;
     }
 
@@ -55,25 +59,37 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User updateUser(User user) {
+    public User updateUser(User user) throws SubstanceNotFoundException {
         String sqlQuery = "update users set " +
                 "login = ?, name = ?, email = ?, birthday = ? " +
                 "where user_id = ?";
 
-        jdbcTemplate.update(sqlQuery,
-                user.getLogin(),
-                user.getName(),
-                user.getEmail(),
-                user.getBirthday(),
-                user.getId());
+        try {
+            jdbcTemplate.update(sqlQuery,
+                    user.getLogin(),
+                    user.getName(),
+                    user.getEmail(),
+                    user.getBirthday(),
+                    user.getId());
+        } catch(DataAccessException e) {
+            throw new ProcessingException("Went smth wrong during getting user from database.");
+        }
 
+        log.info("User {} with email {} is updated.", user.getLogin(), user.getEmail());
         return user;
     }
 
     @Override
     public User getUser(Long id) {
+        int checkUser = jdbcTemplate.update(
+                "update users set user_id=? where user_id=?");
+        if (checkUser == 0) {
+            return null;
+        }
+
         String sqlQuery = "select user_id, login, name, email, birthday " +
                 "from users where user_id = ?";
+
         return jdbcTemplate.queryForObject(sqlQuery, UserDbStorage::makeUser, id);
     }
 
