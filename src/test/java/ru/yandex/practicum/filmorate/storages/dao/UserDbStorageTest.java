@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.SubstanceNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @SpringBootTest
@@ -30,5 +31,14 @@ public class UserDbStorageTest {
                 );
 
     }
+    @Test
+    public void createUserTest() {
+        Optional<User> testUserOptional = Optional.of(new User("login", "email", LocalDate.of(2022, 9, 01)));
 
+        userDbStorage.createUser(testUserOptional.get());
+
+        assertThat(testUserOptional)
+                .isPresent()
+                .hasValueSatisfying(user -> assertThat(user).hasFieldOrPropertyWithValue("id", 0L));
+    }
 }

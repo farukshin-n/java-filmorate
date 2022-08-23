@@ -40,8 +40,10 @@ public class FilmDbStorageTest {
         testGenre.add(genre1);
         testGenre.add(genre2);
 
-        Film testFilm = new Film(1L, "krik", "incredible film!", "G",
-                LocalDate.of(2019,6,30), 120L, testGenre);
+        Film testFilm = new Film("krik",
+                LocalDate.of(2019,6,30),
+                "incredible film!",
+                120L);
 
         Optional<Film> resultFilm = Optional.of(filmDbStorage.updateFilm(testFilm));
 

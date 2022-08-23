@@ -10,8 +10,6 @@ public interface FriendshipStorage {
 
     void deleteFriendship(Long id, Long friendId);
 
-    void acceptFriendship(Long id, Long friendId);
-
     List<User> getFriendsOfUser(Long userId);
     List<User> getMutualFriendList(Long userOneId, Long userTwoId);
 }

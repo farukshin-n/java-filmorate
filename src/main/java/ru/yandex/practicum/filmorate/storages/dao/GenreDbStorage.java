@@ -34,7 +34,7 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Genre getGenre(Long genreId) {
-        String sqlQuery = "select distinct genre_id, genre_name from genre where genre_id = ?";
+        String sqlQuery = "select genre_id, genre_name from genre where genre_id = ?";
 
         return jdbcTemplate.queryForObject(sqlQuery, this::makeGenre, genreId);
     }
@@ -48,6 +48,7 @@ public class GenreDbStorage implements GenreStorage {
         for (Genre genre : film.getGenre()) {
             jdbcTemplate.update(sqlUpdateGenresQuery, film.getId(), genre.getGenreId());
         }
+        log.info("Updated genre list of film with id {}", film.getId());
         return film;
     }
 
@@ -60,6 +61,7 @@ public class GenreDbStorage implements GenreStorage {
         List<Genre> genreList = jdbcTemplate.query(sqlQuery, this::makeGenre, film.getId());
 
         film.setGenre(new HashSet<>(genreList));
+        log.info("Set genre list to film with id {}", film.getId());
     }
 
 
@@ -69,7 +71,7 @@ public class GenreDbStorage implements GenreStorage {
                 "(select genre_id from film_genre where film_id = ?)";
 
         List<Genre> genreList = jdbcTemplate.query(sqlQuery, this::makeGenre, filmId);
-
+        log.info("Returned genre list from film with id {}", filmId);
         return new HashSet<>(genreList);
     }
 

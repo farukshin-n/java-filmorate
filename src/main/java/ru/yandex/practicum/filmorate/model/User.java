@@ -8,13 +8,10 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-@EqualsAndHashCode
-@Setter
-@Getter
-@RequiredArgsConstructor
-@AllArgsConstructor
+@Data
+@EqualsAndHashCode(of="id")
 public class User {
-    private long id;
+    private Long id;
     @NotBlank
     private final String login;
     private String name;

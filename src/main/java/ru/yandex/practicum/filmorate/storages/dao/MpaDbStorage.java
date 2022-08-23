@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storages.dao;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storages.interfaces.MpaStorage;
 
@@ -29,7 +30,7 @@ public class MpaDbStorage implements MpaStorage {
     }
 
     @Override
-    public Mpa getMpa(Long mpaId) {
+    public Mpa getMpaById(Long mpaId) {
         String sqlQuery = "select mpa_id, mpa_name from mpa where mpa_id = ?";
         return jdbcTemplate.queryForObject(sqlQuery, this::makeMpa, mpaId);
     }

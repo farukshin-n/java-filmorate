@@ -1,28 +1,30 @@
 package ru.yandex.practicum.filmorate.controllers;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.SubstanceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.LikeService;
 
 import javax.validation.Valid;
 import java.util.List;
 
+@Data
 @RestController
 @RequiredArgsConstructor
 public class FilmController {
     private final FilmService filmService;
-    private final LikeService likeService;
 
     @PostMapping(value = "/films")
-    public Film createFilm(@RequestBody @Valid Film film) {
+    public Film createFilm(@RequestBody @Valid final Film film) {
         return filmService.createFilm(film);
     }
 
     @PutMapping("/films")
-    public Film updateFilm(@RequestBody @Valid Film film) {
+    public Film updateFilm(@Valid @RequestBody final Film film) {
         return filmService.updateFilm(film);
     }
 
@@ -42,12 +44,32 @@ public class FilmController {
     }
 
     @PutMapping("/films/{id}/like/{userId}")
-    public void handleAddLike(@PathVariable Long id, @PathVariable Long userId) {
-        likeService.addLike(id, userId);
+    public void handleAddLike(@PathVariable final Long id, @PathVariable final Long userId) {
+        filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/films/{id}/like/{userId}")
-    public void handleDeleteLike(@PathVariable Long id, @PathVariable Long userId) {
-        likeService.deleteLike(id, userId);
+    public void handleDeleteLike(@PathVariable final Long id, @PathVariable final Long userId) {
+        filmService.deleteLike(id, userId);
+    }
+
+    @GetMapping("/mpa")
+    public List<Mpa> handleGetMpaList() {
+        return filmService.getMpaList();
+    }
+
+    @GetMapping("/mpa/{id}")
+    public Mpa handleGetMpa(@PathVariable final Long id) throws SubstanceNotFoundException {
+        return filmService.getMpa(id);
+    }
+
+    @GetMapping("/genres")
+    public List<Genre> handleGetGenreList() {
+        return filmService.getGenreList();
+    }
+
+    @GetMapping("/genres/{id}")
+    public Genre handleGetGenre(@PathVariable final Long id) {
+        return filmService.getGenre(id);
     }
 }

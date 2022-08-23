@@ -31,7 +31,7 @@ public class UserDbStorage implements UserStorage {
         String sqlQuery = "insert into users(login, name, email, birthday) values(?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
+        
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"user_id"});
             stmt.setString(1, user.getLogin());
@@ -51,6 +51,7 @@ public class UserDbStorage implements UserStorage {
     public void deleteUser(User user) {
         String sqlQuery = "delete from users where user_id = ?";
         jdbcTemplate.update(sqlQuery, user.getId());
+        log.info("Deleted user with id {}", user.getId());
     }
 
     @Override
@@ -89,11 +90,14 @@ public class UserDbStorage implements UserStorage {
     }
 
     static User makeUser(ResultSet rs, int rowNum) throws SQLException {
-        return new User(rs.getLong("user_id"),
+        User resultUser = new User(
                 rs.getString("login"),
-                rs.getString("name"),
                 rs.getString("email"),
-                rs.getDate("birthday").toLocalDate());
+                rs.getDate("birthday").toLocalDate()
+        );
+        resultUser.setId(rs.getLong("user_id"));
+        resultUser.setName(rs.getString("name"));
+        return resultUser;
     }
 
     @Override

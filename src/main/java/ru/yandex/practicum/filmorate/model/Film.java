@@ -11,28 +11,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Setter
-@Getter
-@AllArgsConstructor
-@RequiredArgsConstructor
+@Data
+@EqualsAndHashCode(of = "id")
 public class Film {
     private Long id;
     @NotBlank
     private final String name;
+    private final LocalDate releaseDate;
     @Size(max=200)
     private final String description;
-    @NotNull
-    private String ratingMPA;
-    private final LocalDate releaseDate;
     @Positive
     private final Long duration;
+    @NotNull
+    private Mpa mpa;
     private Set<Genre> genre = new HashSet<>();
-
-    public Film(String name, String description, String ratingMPA, LocalDate releaseDate, Long duration) {
-        this.name = name;
-        this.description = description;
-        this.ratingMPA = ratingMPA;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-    }
 }

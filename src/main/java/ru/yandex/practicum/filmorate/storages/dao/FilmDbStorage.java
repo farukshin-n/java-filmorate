@@ -12,7 +12,9 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.SubstanceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storages.interfaces.FilmStorage;
+import ru.yandex.practicum.filmorate.storages.interfaces.MpaStorage;
 
 import java.sql.*;
 import java.sql.Date;
@@ -25,10 +27,11 @@ import java.util.*;
 @Repository
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final MpaStorage mpaStorage;
 
     @Override
     public Film createFilm(Film film) {
-        String sqlQuery = "insert into films(name, description, mpa_id, release_date, duration) " +
+        String sqlQuery = "insert into films(name, release_date, description, duration, mpa_id) " +
                 "values(?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -36,27 +39,24 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"film_id"});
             stmt.setString(1, film.getName());
-            stmt.setString(2, film.getDescription());
-            stmt.setString(3, film.getRatingMPA());
             final LocalDate releaseDate = film.getReleaseDate();
             if (releaseDate == null) {
-                stmt.setNull(4, Types.DATE);
+                stmt.setNull(2, Types.DATE);
             } else {
-                stmt.setDate(4, Date.valueOf(releaseDate));
+                stmt.setDate(2, Date.valueOf(releaseDate));
             }
-            stmt.setLong(5, film.getDuration());
+            stmt.setString(3, film.getDescription());
+            stmt.setLong(4, film.getDuration());
+            if (film.getMpa() == null) {
+                stmt.setNull(5, Types.LONGNVARCHAR);
+            } else {
+                stmt.setLong(5, film.getMpa().getMpaId());
+            }
             return stmt;
         }, keyHolder);
 
         film.setId(keyHolder.getKey().longValue());
 
-        // what happened here?
-
-        /* Optional<List<Genre>> newGenres = Optional.of(film.getGenre());
-        for (Genre genre : newGenres.get()) {
-            String genreSqlQuery = "update film_genre set film_id = ?, genre_id = ? if conflict do nothing";
-            jdbcTemplate.update(genreSqlQuery, film.getId(), genre.getGenreId());
-        } */
         log.info("Film {} with id {} is added to database.", film.getName(), film.getId());
 
         return film;
@@ -72,7 +72,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film updateFilm(Film film) throws SubstanceNotFoundException {
+    public Film updateFilm(Film film) {
         if (film == null) {
             throw new SubstanceNotFoundException("Film is not exist.");
         }
@@ -84,18 +84,10 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlQueryFilms,
                 film.getName(),
                 film.getDescription(),
-                film.getRatingMPA(),
+                film.getMpa().getMpaId(),
                 film.getReleaseDate(),
                 film.getDuration(),
                 film.getId());
-
-        // check this after
-
-        /* Optional<List<Genre>> newGenres = Optional.of(film.getGenre());
-        for (Genre genre : newGenres.get()) {
-            String genreSqlQuery = "update film_genre set film_id = ?, genre_id = ? if conflict do nothing";
-            jdbcTemplate.update(genreSqlQuery, film.getId(), genre.getGenreId());
-        } */
 
         log.info("Film {} with id {} is updated database.", film.getName(), film.getId());
 
@@ -104,7 +96,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film getFilm(Long id) throws SubstanceNotFoundException {
-        String sqlQuery = "select f.film_id, f.name, f.description, m.mpa_name, f.release_date, f.duration, " +
+        String sqlQuery = "select f.film_id, f.name, f.description, m.mpa_id, f.release_date, f.duration, " +
                 "g.genre_id, g.genre_name " +
                 "from film_genre fg " +
                 "join genre g on fg.genre_id=g.genre_id " +
@@ -127,34 +119,28 @@ public class FilmDbStorage implements FilmStorage {
     private Set<Film> makeFilm(SqlRowSet srs) {
         Film resultFilm = null;
         Set<Film> resultFilmSet = new HashSet<>();
+        long count = -1L;
 
         while(srs.next()) {
-            long count = -1L;
-            Genre newGenre;
+            Genre newGenre = new Genre(
+                    srs.getLong("genre_id"),
+                    srs.getString("genre_name")
+            );
             if (srs.getLong("film_id") != count) {
                 Set<Genre> genreSet = new HashSet<>();
                 resultFilm = new Film(
                         srs.getString("name"),
-                        srs.getString("description"),
-                        srs.getString("mpa_name"),
                         Objects.requireNonNull(srs.getDate("release_date")).toLocalDate(),
+                        srs.getString("description"),
                         srs.getLong("duration")
                 );
                 Long filmId = srs.getLong("film_id");
-
                 resultFilm.setId(filmId);
-                newGenre = new Genre(
-                        srs.getLong("genre_id"),
-                        srs.getString("genre_name")
-                );
+                resultFilm.setMpa(mpaStorage.getMpaById(srs.getLong("mpa_id")));
                 genreSet.add(newGenre);
                 resultFilm.setGenre(genreSet);
                 count = filmId;
             } else {
-                newGenre = new Genre(
-                        srs.getLong("genre_id"),
-                        srs.getString("genre_name")
-                );
                 Set<Genre> updatedGenreSet = resultFilm.getGenre();
                 updatedGenreSet.add(newGenre);
                 resultFilm.setGenre(updatedGenreSet);
@@ -199,9 +185,8 @@ public class FilmDbStorage implements FilmStorage {
 
         Set<Film> resultFilmSet = makeFilm(rowSet);
 
-        if (resultFilmSet.size() == 0) {
-            throw new SubstanceNotFoundException("There aren't any films in database");
-        }
         return resultFilmSet;
     }
+
+
 }
