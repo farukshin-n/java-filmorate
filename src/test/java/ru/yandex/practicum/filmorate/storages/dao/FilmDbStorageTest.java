@@ -22,39 +22,47 @@ public class FilmDbStorageTest {
     private final FilmDbStorage filmDbStorage;
 
     @Test
-    public void getFilmTest() throws SubstanceNotFoundException {
-        Optional<Film> testFilm = Optional.of(filmDbStorage.getFilm(2L));
+    public void FilmDbStorageTest() {
+        Mpa testMpa = new Mpa(1l, "mpaName");
+
+        Film filmForTest = new Film(
+                "testFilm",
+                LocalDate.of(2020,8,10),
+                "description",
+                120L,
+                testMpa
+        );
+
+        Optional<Film> testFilm = Optional.of(filmDbStorage.createFilm(filmForTest));
 
         assertThat(testFilm)
                 .isPresent()
                 .hasValueSatisfying(film ->
-                        assertThat(film).hasFieldOrPropertyWithValue("id", 2L)
+                        assertThat(film).hasFieldOrPropertyWithValue("name", "testFilm")
                 );
-    }
 
-    @Test
-    public void updateFilmTest() throws SubstanceNotFoundException {
-        Genre genre1 = new Genre(5L, "horror");
-        Genre genre2 = new Genre(6L, "узшс");
+        Optional<Film> testGetFilm = Optional.of(filmDbStorage.getFilm(1L));
 
-        Set<Genre> testGenre = new HashSet<>();
-        testGenre.add(genre1);
-        testGenre.add(genre2);
-
-        Mpa newMpa = new Mpa(1L, "G");
-
-        Film testFilm = new Film("krik",
-                LocalDate.of(2019,6,30),
-                "incredible film!",
-                120L, newMpa);
-
-        Optional<Film> resultFilm = Optional.of(filmDbStorage.updateFilm(testFilm));
-
-        assertThat(resultFilm)
+        assertThat(testGetFilm)
                 .isPresent()
                 .hasValueSatisfying(film ->
-                        assertThat(film).hasFieldOrPropertyWithValue("mpa", "G").
-                        hasFieldOrPropertyWithValue("description", "incredible film!")
-                                .hasFieldOrPropertyWithValue("genre", testGenre));
+                        assertThat(film).hasFieldOrPropertyWithValue("name", "testFilm")
+                );
+
+        Film filmForUpdateTest = new Film(
+                "film",
+                LocalDate.of(2020,8,10),
+                "description",
+                120L,
+                testMpa
+        );
+
+        Optional<Film> testUpdateFilm = Optional.of(filmDbStorage.createFilm(filmForUpdateTest));
+
+        assertThat(testUpdateFilm)
+                .isPresent()
+                .hasValueSatisfying(film ->
+                        assertThat(film).hasFieldOrPropertyWithValue("name", "film")
+                );
     }
 }

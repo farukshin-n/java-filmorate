@@ -24,7 +24,7 @@ public class MpaDbStorageTest {
         assertThat(testMpa)
                 .isPresent()
                 .hasValueSatisfying(mpa ->
-                        assertThat(mpa).hasFieldOrPropertyWithValue("mpaId", 1L)
+                        assertThat(mpa).hasFieldOrPropertyWithValue("id", 1L)
                                 .hasFieldOrPropertyWithValue("name", "G")
                 );
     }

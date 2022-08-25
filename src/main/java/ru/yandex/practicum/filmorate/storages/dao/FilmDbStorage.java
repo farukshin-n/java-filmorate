@@ -109,10 +109,7 @@ public class FilmDbStorage implements FilmStorage {
         if (resultFilmSet.size() == 0) {
             throw new SubstanceNotFoundException(String.format("Film with id %d is not exist in database", id));
         }
-        Film resultFilm = new ArrayList<>(resultFilmSet).get(0);
-
-        log.info("wtf setgenres {} with id {}", resultFilm.getGenres().toArray().length, id);
-        return resultFilm;
+        return new ArrayList<>(resultFilmSet).get(0);
     }
 
     private Set<Film> makeFilm(SqlRowSet srs) {
@@ -136,16 +133,22 @@ public class FilmDbStorage implements FilmStorage {
                 );
                 Long filmId = srs.getLong("film_id");
                 resultFilm.setId(filmId);
-                genreSet.add(newGenre);
-                resultFilm.setGenres(genreSet);
+                if (newGenre != null && newGenre.getId() != 0) {
+                    genreSet.add(newGenre);
+                    resultFilm.setGenres(genreSet);
+                    log.info("add newgenre with id {}", newGenre.getId());
+                }
+
                 count = filmId;
             } else {
-                if (resultFilm != null) {
+                if (resultFilm == null) {
+                    throw new SubstanceNotFoundException("Film not found");
+                }
+                if (newGenre != null && newGenre.getId() != 0) {
                     Set<Genre> updatedGenreSet = resultFilm.getGenres();
                     updatedGenreSet.add(newGenre);
                     resultFilm.setGenres(updatedGenreSet);
-                } else {
-                    throw new SubstanceNotFoundException("Film not found");
+                    log.info("add newgenre with id {}", newGenre.getId());
                 }
             }
             resultFilmSet.add(resultFilm);

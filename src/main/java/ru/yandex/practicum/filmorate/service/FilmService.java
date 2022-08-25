@@ -41,10 +41,12 @@ public class FilmService {
 
     public Film createFilm(Film film) {
         validateFilmByDate(film);
+        Film resultFilm = filmStorage.createFilm(film);
+
         if (film.getGenres() != null) {
             genreStorage.updateFilmGenreList(film);
         }
-        return filmStorage.createFilm(film);
+        return resultFilm;
     }
 
     public Film updateFilm(Film film) {
@@ -68,11 +70,8 @@ public class FilmService {
         if (id < 0) {
             throw new SubstanceNotFoundException(String.format("Not found film with such id %d.", id));
         }
-        Film resultFilm = filmStorage.getFilm(id);
 
-        genreStorage.setFilmGenreList(resultFilm);
-
-        return resultFilm;
+        return filmStorage.getFilm(id);
     }
 
     private void validateFilmByDate(Film film) {
@@ -126,15 +125,16 @@ public class FilmService {
         if (genreId == null || genreId < 0) {
             throw new SubstanceNotFoundException(String.format("Id %d is less than zero or null.", genreId));
         }
+
         return genreStorage.getGenre(genreId);
     }
 
     private void validateId(Long filmId, Long userId) {
-        if (userId <= 0) {
+        if (userId <= 0 || userId == null) {
             throw new SubstanceNotFoundException(String.format("User is not found.", userId));
         }
 
-        if (filmId <= 0) {
+        if (filmId <= 0 || filmId == null) {
             throw new SubstanceNotFoundException(String.format("User is not found.", userId));
         }
     }

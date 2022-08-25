@@ -20,7 +20,18 @@ public class UserDbStorageTest {
     private final UserDbStorage userDbStorage;
 
     @Test
-    public void getUserTest() throws SubstanceNotFoundException {
+    public void setUserDbStorageTest() {
+        User testUser = new User("login",
+                "email",
+                LocalDate.of(2022, 9, 01));
+
+        testUser.setName(testUser.getLogin());
+
+        Optional<User> testUserOptional = Optional.of(userDbStorage.createUser(testUser));
+
+        assertThat(testUserOptional)
+                .isPresent()
+                .hasValueSatisfying(user -> assertThat(user).hasFieldOrPropertyWithValue("id", 1L));
 
         Optional<User> userOptional = Optional.of(userDbStorage.getUser(1L));
 
@@ -30,15 +41,18 @@ public class UserDbStorageTest {
                         assertThat(user).hasFieldOrPropertyWithValue("id", 1L)
                 );
 
-    }
-    @Test
-    public void createUserTest() {
-        Optional<User> testUserOptional = Optional.of(new User("login", "email", LocalDate.of(2022, 9, 01)));
+        User testUpdateUser = new User("login_new",
+                "email",
+                LocalDate.of(2022, 9, 01));
+        testUpdateUser.setName(testUpdateUser.getLogin());
+        testUpdateUser.setId(1L);
 
-        userDbStorage.createUser(testUserOptional.get());
+        Optional<User> testUserUpdateOptional = Optional.of(userDbStorage.updateUser(testUpdateUser));
 
-        assertThat(testUserOptional)
+        assertThat(testUserUpdateOptional)
                 .isPresent()
-                .hasValueSatisfying(user -> assertThat(user).hasFieldOrPropertyWithValue("id", 0L));
+                .hasValueSatisfying(user ->
+                        assertThat(user).hasFieldOrPropertyWithValue("name", "login_new")
+                );
     }
 }

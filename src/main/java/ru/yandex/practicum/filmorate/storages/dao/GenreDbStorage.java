@@ -14,14 +14,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 @Slf4j
-@Component("dbGenre")
+@Component
 @RequiredArgsConstructor
 public class GenreDbStorage implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
     public List<Genre> getGenreList() {
-        String sqlQuery = "select genre_id, genre_name from genres";
+        String sqlQuery = "select distinct genre_id, genre_name from genres";
         return jdbcTemplate.query(sqlQuery, this::makeGenre);
     }
 
