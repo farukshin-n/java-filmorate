@@ -1,11 +1,12 @@
-package ru.yandex.practicum.filmorate.storages;
+package ru.yandex.practicum.filmorate.storages.inmemory;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.SubstanceNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storages.interfaces.UserStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,8 +15,8 @@ import java.util.List;
 
 @Data
 @Slf4j
-@Component
-public class InMemoryUserStorage implements UserStorage{
+@Component("inMemoryUser")
+public class InMemoryUserStorage implements UserStorage {
     private long id = 0L;
     private final HashMap<Long, User> users = new HashMap<>();
 
@@ -39,7 +40,7 @@ public class InMemoryUserStorage implements UserStorage{
     }
 
     @Override
-    public User updateUser(User user) throws UserNotFoundException {
+    public User updateUser(User user) throws SubstanceNotFoundException {
         validate(user);
 
         if (users.containsKey(user.getId())) {
@@ -49,15 +50,15 @@ public class InMemoryUserStorage implements UserStorage{
             users.put(user.getId(), user);
             log.info("User {} with email {} is updated.", user.getLogin(), user.getEmail());
         } else {
-            throw new UserNotFoundException("There wasn't user with such id in user list.");
+            throw new SubstanceNotFoundException("There wasn't user with such id in user list.");
         }
         return user;
     }
 
     @Override
-    public User getUser(Long id) throws UserNotFoundException {
+    public User getUser(Long id) throws SubstanceNotFoundException {
         if (id < 0) {
-            throw new UserNotFoundException(String.format("Id %d is wrong, it must be more than zero.", id));
+            throw new SubstanceNotFoundException(String.format("Id %d is wrong, it must be more than zero.", id));
         }
 
         return users.get(id);

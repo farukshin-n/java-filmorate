@@ -1,90 +1,96 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.FriendProcessingException;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.SubstanceNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storages.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storages.UserStorage;
+import ru.yandex.practicum.filmorate.storages.interfaces.FriendshipStorage;
+import ru.yandex.practicum.filmorate.storages.interfaces.UserStorage;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @Data
-@Service
+@Service("userService")
 public class UserService {
-    private final UserStorage storage;
+    private final UserStorage userStorage;
+    private final FriendshipStorage friendshipStorage;
 
-    public UserService(UserStorage storage) {
-        this.storage = storage;
+    @Autowired
+    public UserService(@Qualifier("dbUser") UserStorage userStorage, FriendshipStorage friendshipStorage) {
+        this.userStorage = userStorage;
+        this.friendshipStorage = friendshipStorage;
     }
 
-    public void addFriend(@Valid @Positive Long userAddingId,
-                          @Valid @Positive Long userAddedId) throws UserNotFoundException {
-        helpAddingFriend(userAddingId, userAddedId);
-        helpAddingFriend(userAddedId, userAddingId);
-    }
+    public User getUser(Long id) throws SubstanceNotFoundException {
+        if (id < 0) {
+            throw new SubstanceNotFoundException(String.format("Id %d is less than zero", id));
+        }
 
-    public User getUser(Long id) throws UserNotFoundException {
-        return storage.getUser(id);
+        final User user = userStorage.getUser(id);
+
+        if (user == null) {
+            throw new SubstanceNotFoundException(String.format("User not with id %d found.", id));
+        }
+
+        return user;
     }
 
     public User createUser(User user) {
-        return storage.createUser(user);
+        validate(user);
+
+        return userStorage.createUser(user);
     }
 
-    public User updateUser(User user) throws UserNotFoundException {
-        return storage.updateUser(user);
+    public User updateUser(User user) {
+        validate(user);
+        final User resultUser = userStorage.getUser(user.getId());
+
+        if (resultUser == null) {
+            throw new SubstanceNotFoundException(String.format("User %d not found in database.", user.getId()));
+        }
+
+        return userStorage.updateUser(user);
     }
 
     public List<User> getUserList() {
-        return storage.getUserList();
+        return userStorage.getUserList();
     }
 
-    private void helpAddingFriend(Long firstUserId, Long secondUserId) throws UserNotFoundException {
-        User user1 = storage.getUser(firstUserId);
-        User user2 = storage.getUser(secondUserId);
-
-        if (!user1.getFriends().add(user2)) {
-            throw new FriendProcessingException(String.format("User %d not added to %d friends' list.",
-                    user2.getId(), user1.getId()));
+    private User validate(User user) {
+        if (user.getName() == null || user.getName().isEmpty()) {
+            user.setName(user.getLogin());
         }
-        storage.updateUser(user1);
-    }
-
-    public void deleteFriend(@Valid @Positive Long userAddingId,
-                             @Valid @Positive Long userAddedId) throws UserNotFoundException {
-        helpDeletingFriend(userAddingId, userAddedId);
-        helpDeletingFriend(userAddedId, userAddingId);
-    }
-
-    private void helpDeletingFriend(Long firstUserId, Long secondUserId) throws UserNotFoundException {
-        User user1 = storage.getUser(firstUserId);
-        User user2 = storage.getUser(secondUserId);
-
-        if (!user1.getFriends().remove(user2)) {
-            throw new FriendProcessingException(String.format("User %d not deleted from user %d friends' list.",
-                    user2.getId(), user1.getId()));
+        if (user.getLogin().contains(" ")) {
+            throw new ValidationException("Check your login, is can't contain white space.");
+        } else if (user.getBirthday().isAfter(LocalDate.now())) {
+            throw new ValidationException("User's birthday is in future. Check it and try again.");
         }
-        storage.updateUser(user1);
+        return user;
     }
 
-    public ArrayList<User> getMutualFriendsList(@Valid @Positive Long userAddingId,
-                                                @Valid @Positive Long userAddedId) throws UserNotFoundException {
-        User userAdding = storage.getUser(userAddingId);
-        User userAdded = storage.getUser(userAddedId);
-
-        Set<User> intersection = new HashSet<>(userAdding.getFriends());
-        intersection.retainAll(userAdded.getFriends());
-        return new ArrayList<>(intersection);
+    public Friendship addFriendship(@Valid @Positive Long id,
+                                    @Valid @Positive Long friendId) {
+        return friendshipStorage.addFriendship(id, friendId);
     }
 
-    public ArrayList<User> getFriendList(Long userId) throws UserNotFoundException {
-        return new ArrayList<>(storage.getUser(userId).getFriends());
+    public void deleteFriendship(@Valid @Positive Long id,
+                                 @Valid @Positive Long friendId) {
+        friendshipStorage.deleteFriendship(id, friendId);
+    }
+
+    public List<User> getFriendsList(@Valid @Positive Long userId) {
+        return friendshipStorage.getFriendsOfUser(userId);
+    }
+
+    public List<User> getMutualFriendList(@Valid @Positive Long userOneId,
+                                          @Valid @Positive Long userTwoId) {
+        return friendshipStorage.getMutualFriendList(userOneId, userTwoId);
     }
 }
