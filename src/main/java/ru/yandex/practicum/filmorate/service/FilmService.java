@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -18,8 +19,8 @@ import ru.yandex.practicum.filmorate.storages.interfaces.MpaStorage;
 import java.time.LocalDate;
 import java.util.List;
 
-@Data
-@Service("filmService")
+@Slf4j
+@Service
 public class FilmService {
     private final FilmStorage filmStorage;
     private final MpaStorage mpaStorage;
@@ -28,7 +29,10 @@ public class FilmService {
     final LocalDate CHECK_DATE = LocalDate.of(1895, 12, 28);
 
     @Autowired
-    public FilmService(@Qualifier("dbFilm") FilmStorage filmStorage, MpaStorage mpaStorage, GenreStorage genreStorage, LikeStorage likeStorage) {
+    public FilmService(@Qualifier("dbFilm") FilmStorage filmStorage,
+                       MpaStorage mpaStorage,
+                       GenreStorage genreStorage,
+                       LikeStorage likeStorage) {
         this.filmStorage = filmStorage;
         this.mpaStorage = mpaStorage;
         this.genreStorage = genreStorage;
@@ -37,7 +41,9 @@ public class FilmService {
 
     public Film createFilm(Film film) {
         validateFilmByDate(film);
-
+        if (film.getGenres() != null) {
+            genreStorage.updateFilmGenreList(film);
+        }
         return filmStorage.createFilm(film);
     }
 
@@ -45,20 +51,28 @@ public class FilmService {
         if (film.getId() <= 0 || !filmStorage.getFilmList().contains(film)) {
             throw new SubstanceNotFoundException(String.format("Film with id %d not found", film.getId()));
         }
-
         validateFilmByDate(film);
+
+        if (film.getGenres() != null) {
+            genreStorage.updateFilmGenreList(film);
+        }
+
         return filmStorage.updateFilm(film);
     }
 
-    public List<Film> getFilmList() throws SubstanceNotFoundException {
+    public List<Film> getFilmList() {
         return filmStorage.getFilmList();
     }
 
-    public Film getFilm(Long id) throws SubstanceNotFoundException {
+    public Film getFilm(Long id) {
         if (id < 0) {
-            throw new ValidationException(String.format("Id %d is wrong.", id));
+            throw new SubstanceNotFoundException(String.format("Not found film with such id %d.", id));
         }
-        return filmStorage.getFilm(id);
+        Film resultFilm = filmStorage.getFilm(id);
+
+        genreStorage.setFilmGenreList(resultFilm);
+
+        return resultFilm;
     }
 
     private void validateFilmByDate(Film film) {

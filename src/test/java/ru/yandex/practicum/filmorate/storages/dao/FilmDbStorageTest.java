@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.SubstanceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -40,17 +41,19 @@ public class FilmDbStorageTest {
         testGenre.add(genre1);
         testGenre.add(genre2);
 
+        Mpa newMpa = new Mpa(1L, "G");
+
         Film testFilm = new Film("krik",
                 LocalDate.of(2019,6,30),
                 "incredible film!",
-                120L);
+                120L, newMpa);
 
         Optional<Film> resultFilm = Optional.of(filmDbStorage.updateFilm(testFilm));
 
         assertThat(resultFilm)
                 .isPresent()
                 .hasValueSatisfying(film ->
-                        assertThat(film).hasFieldOrPropertyWithValue("ratingMPA", "G").
+                        assertThat(film).hasFieldOrPropertyWithValue("mpa", "G").
                         hasFieldOrPropertyWithValue("description", "incredible film!")
                                 .hasFieldOrPropertyWithValue("genre", testGenre));
     }

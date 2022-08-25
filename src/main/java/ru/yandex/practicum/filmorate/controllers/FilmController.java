@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controllers;
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.SubstanceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -12,14 +12,19 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import java.util.List;
 
-@Data
 @RestController
-@RequiredArgsConstructor
+@Slf4j
 public class FilmController {
     private final FilmService filmService;
 
-    @PostMapping(value = "/films")
-    public Film createFilm(@RequestBody @Valid final Film film) {
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
+
+    @PostMapping("/films")
+    public Film createFilm(@Valid @RequestBody final Film film) {
+        log.info("wtf mpa id {}", film.getMpa().getId());
         return filmService.createFilm(film);
     }
 
@@ -38,7 +43,7 @@ public class FilmController {
         return filmService.getFilm(id);
     }
 
-    @GetMapping("/films/popular?count={count}")
+    @GetMapping("/films/popular")
     public List<Film> handleGetMostLikedFilms(@RequestParam(required = false, defaultValue = "10") Integer count) {
         return filmService.getMostLikedFilms(count);
     }
@@ -69,7 +74,8 @@ public class FilmController {
     }
 
     @GetMapping("/genres/{id}")
-    public Genre handleGetGenre(@PathVariable final Long id) {
+    public Genre handleGetGenre(@PathVariable final 
+                                    Long id) {
         return filmService.getGenre(id);
     }
 }

@@ -14,7 +14,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storages.interfaces.FilmStorage;
-import ru.yandex.practicum.filmorate.storages.interfaces.MpaStorage;
+import ru.yandex.practicum.filmorate.storages.interfaces.FriendshipStorage;
 
 import java.sql.*;
 import java.sql.Date;
@@ -27,7 +27,7 @@ import java.util.*;
 @Repository
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final MpaStorage mpaStorage;
+    private final FriendshipStorage friendshipStorage;
 
     @Override
     public Film createFilm(Film film) {
@@ -35,7 +35,7 @@ public class FilmDbStorage implements FilmStorage {
                 "values(?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
+        log.info("wtf mpa id {}", film.getMpa().getId());
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"film_id"});
             stmt.setString(1, film.getName());
@@ -47,11 +47,7 @@ public class FilmDbStorage implements FilmStorage {
             }
             stmt.setString(3, film.getDescription());
             stmt.setLong(4, film.getDuration());
-            if (film.getMpa() == null) {
-                stmt.setNull(5, Types.LONGNVARCHAR);
-            } else {
-                stmt.setLong(5, film.getMpa().getMpaId());
-            }
+            stmt.setLong(5, film.getMpa().getId());
             return stmt;
         }, keyHolder);
 
@@ -84,7 +80,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlQueryFilms,
                 film.getName(),
                 film.getDescription(),
-                film.getMpa().getMpaId(),
+                film.getMpa().getId(),
                 film.getReleaseDate(),
                 film.getDuration(),
                 film.getId());
@@ -96,13 +92,14 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film getFilm(Long id) throws SubstanceNotFoundException {
-        String sqlQuery = "select f.film_id, f.name, f.description, m.mpa_id, f.release_date, f.duration, " +
+        String sqlQuery = "select f.film_id, f.name, f.description, m.mpa_id, m.mpa_name, f.release_date, f.duration, " +
                 "g.genre_id, g.genre_name " +
-                "from film_genre fg " +
-                "join genre g on fg.genre_id=g.genre_id " +
-                "join films f on f.film_id=fg.film_id " +
+                "from films f " +
                 "join mpa m on f.mpa_id=m.mpa_id " +
-                "where fg.film_id = ?";
+                "left outer join film_genre fg on f.film_id=fg.film_id " +
+                "left outer join genres g on fg.genre_id=g.genre_id " +
+                "group by f.film_id, g.genre_id, m.mpa_id " +
+                "having f.film_id = ?";
 
         // reviewer: genre тоже желательно джоинить одним запросом
 
@@ -112,13 +109,15 @@ public class FilmDbStorage implements FilmStorage {
         if (resultFilmSet.size() == 0) {
             throw new SubstanceNotFoundException(String.format("Film with id %d is not exist in database", id));
         }
+        Film resultFilm = new ArrayList<>(resultFilmSet).get(0);
 
-        return new ArrayList<>(resultFilmSet).get(0);
+        log.info("wtf setgenres {} with id {}", resultFilm.getGenres().toArray().length, id);
+        return resultFilm;
     }
 
     private Set<Film> makeFilm(SqlRowSet srs) {
         Film resultFilm = null;
-        Set<Film> resultFilmSet = new HashSet<>();
+        Set<Film> resultFilmSet = new LinkedHashSet<>();
         long count = -1L;
 
         while(srs.next()) {
@@ -127,23 +126,27 @@ public class FilmDbStorage implements FilmStorage {
                     srs.getString("genre_name")
             );
             if (srs.getLong("film_id") != count) {
-                Set<Genre> genreSet = new HashSet<>();
+                Set<Genre> genreSet = new LinkedHashSet<>();
                 resultFilm = new Film(
                         srs.getString("name"),
                         Objects.requireNonNull(srs.getDate("release_date")).toLocalDate(),
                         srs.getString("description"),
-                        srs.getLong("duration")
+                        srs.getLong("duration"),
+                        new Mpa(srs.getLong("mpa_id"), srs.getString("mpa_name"))
                 );
                 Long filmId = srs.getLong("film_id");
                 resultFilm.setId(filmId);
-                resultFilm.setMpa(mpaStorage.getMpaById(srs.getLong("mpa_id")));
                 genreSet.add(newGenre);
-                resultFilm.setGenre(genreSet);
+                resultFilm.setGenres(genreSet);
                 count = filmId;
             } else {
-                Set<Genre> updatedGenreSet = resultFilm.getGenre();
-                updatedGenreSet.add(newGenre);
-                resultFilm.setGenre(updatedGenreSet);
+                if (resultFilm != null) {
+                    Set<Genre> updatedGenreSet = resultFilm.getGenres();
+                    updatedGenreSet.add(newGenre);
+                    resultFilm.setGenres(updatedGenreSet);
+                } else {
+                    throw new SubstanceNotFoundException("Film not found");
+                }
             }
             resultFilmSet.add(resultFilm);
         }
@@ -151,29 +154,28 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmList() throws SubstanceNotFoundException {
-        String sqlQuery = "select f.film_id, f.name, f.description, m.mpa_name, f.release_date, f.duration, " +
+    public List<Film> getFilmList() {
+        String sqlQuery = "select f.film_id, f.name, f.description, m.mpa_id, m.mpa_name, f.release_date, f.duration, " +
                 "g.genre_id, g.genre_name " +
-                "from film_genre fg " +
-                "join genre g on fg.genre_id=g.genre_id " +
-                "join films f on f.film_id=fg.film_id " +
+                "from films f " +
                 "join mpa m on f.mpa_id=m.mpa_id " +
-                "group by fg.genre_id";
+                "left outer join film_genre fg on fg.film_id=f.film_id " +
+                "left outer join genres g on fg.genre_id=g.genre_id " +
+                "group by f.film_id, g.genre_id, m.mpa_id";
 
         return new ArrayList<>(helpGetFilmList(sqlQuery));
     }
 
-    // check later
     @Override
     public List<Film> getMostLikedFilms(Integer count) {
-        String sqlQuery = "select f.film_d, f.name, f.description, m.mpa_name, f.release_date, f.duration, " +
+        String sqlQuery = "select f.film_id, f.name, f.description, m.mpa_id, m.mpa_name, f.release_date, f.duration, " +
                 "g.genre_id, g.genre_name " +
-                "from film_genre fg " +
-                "join genre g on fg.genre_id=g.genre_id " +
-                "join films f on f.film_id=fg.film_id " +
+                "from films f " +
                 "join mpa m on f.mpa_id=m.mpa_id " +
-                "left outer join likes l on f.film_id=l.film_id" +
-                "group by f.film_id, g.genre_id, m.mpa_name " +
+                "left outer join film_genre fg on f.film_id=fg.film_id " +
+                "left outer join genres g on fg.genre_id=g.genre_id " +
+                "left outer join likes l on f.film_id=l.film_id " +
+                "group by f.film_id, g.genre_id, m.mpa_id " +
                 "order by count(l.user_id) desc " +
                 "limit " + count;
 
@@ -183,9 +185,7 @@ public class FilmDbStorage implements FilmStorage {
     private Set<Film> helpGetFilmList(String sqlQuery) {
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery);
 
-        Set<Film> resultFilmSet = makeFilm(rowSet);
-
-        return resultFilmSet;
+        return makeFilm(rowSet);
     }
 
 

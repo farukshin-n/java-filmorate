@@ -10,9 +10,8 @@ import ru.yandex.practicum.filmorate.storages.interfaces.GenreStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Component("dbGenre")
@@ -22,57 +21,42 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public List<Genre> getGenreList() {
-        String sqlQuery = "select distinct genre_id, genre_name from genre";
-        List<Genre> resultGenres = jdbcTemplate.query(sqlQuery, this::makeGenre);
-
-        if (resultGenres.size() == 0) {
-            log.info("Genre list is empty.");
-        }
-
-        return resultGenres;
+        String sqlQuery = "select genre_id, genre_name from genres";
+        return jdbcTemplate.query(sqlQuery, this::makeGenre);
     }
 
     @Override
     public Genre getGenre(Long genreId) {
-        String sqlQuery = "select genre_id, genre_name from genre where genre_id = ?";
+        String sqlQuery = "select genre_id, genre_name from genres where genre_id = ?";
 
         return jdbcTemplate.queryForObject(sqlQuery, this::makeGenre, genreId);
     }
 
+    @Override
     public Film updateFilmGenreList(Film film) {
         String sqlDeleteGenresQuery = "delete from film_genre where film_id = ?";
         jdbcTemplate.update(sqlDeleteGenresQuery, film.getId());
 
         String sqlUpdateGenresQuery = "insert into film_genre(film_id, genre_id) values(?, ?)";
 
-        for (Genre genre : film.getGenre()) {
-            jdbcTemplate.update(sqlUpdateGenresQuery, film.getId(), genre.getGenreId());
+        for (Genre genre : film.getGenres()) {
+            jdbcTemplate.update(sqlUpdateGenresQuery, film.getId(), genre.getId());
         }
         log.info("Updated genre list of film with id {}", film.getId());
         return film;
     }
 
+    @Override
     public void setFilmGenreList(Film film) {
         String sqlQuery = "select g.genre_id, g.genre_name " +
                 "from film_genre fg " +
-                "join genre g on fg.genre_id=g.genre_id " +
+                "join genres g on fg.genre_id=g.genre_id " +
                 "where fg.film_id = ?";
 
         List<Genre> genreList = jdbcTemplate.query(sqlQuery, this::makeGenre, film.getId());
 
-        film.setGenre(new HashSet<>(genreList));
+        film.setGenres(new LinkedHashSet<>(genreList));
         log.info("Set genre list to film with id {}", film.getId());
-    }
-
-
-    public Set<Genre> loadFilmGenreList(Long filmId) {
-        String sqlQuery = "select distinct genre_id, genre_name from genre " +
-                "where genre_id in " +
-                "(select genre_id from film_genre where film_id = ?)";
-
-        List<Genre> genreList = jdbcTemplate.query(sqlQuery, this::makeGenre, filmId);
-        log.info("Returned genre list from film with id {}", filmId);
-        return new HashSet<>(genreList);
     }
 
     private Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {

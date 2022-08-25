@@ -5,8 +5,8 @@ VALUES  (1,'G'),
         (4,'R'),
         (5,'NC-17');
 
-MERGE INTO genre (genre_id, genre_name)
-VALUES (1,'Комедия'),
+MERGE INTO genres (genre_id, genre_name)
+VALUES  (1,'Комедия'),
         (2,'Драма'),
         (3,'Мультфильм'),
         (4,'Триллер'),

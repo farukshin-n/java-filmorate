@@ -2,12 +2,11 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
 
-@Getter
 @Setter
-@NoArgsConstructor
+@Getter
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Mpa {
-    private Long mpaId;
+    private Long id;
     private String name;
 }
