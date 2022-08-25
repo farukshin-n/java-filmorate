@@ -24,7 +24,6 @@ public class FilmController {
 
     @PostMapping("/films")
     public Film createFilm(@Valid @RequestBody final Film film) {
-        log.info("wtf mpa id {}", film.getMpa().getId());
         return filmService.createFilm(film);
     }
 

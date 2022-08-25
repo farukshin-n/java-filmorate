@@ -36,7 +36,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
         String sqlQuery = "insert into friends(friend_one, friend_two) " +
                 "values(?, ?)";
         jdbcTemplate.update(sqlQuery, id, friendId);
-        log.info("To user with id {} added friend with id {}", id, friendId);
+        log.info("To user with id {} added friend with id {}.", id, friendId);
         return new Friendship(id, friendId);
     }
 
@@ -44,7 +44,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
     public void deleteFriendship(Long id, Long friendId) {
         String sqlQuery = "delete from friends where friend_one = ? and friend_two = ?";
         jdbcTemplate.update(sqlQuery, id, friendId);
-        log.info("From user with id {} delete friend with id {}", id, friendId);
+        log.info("From user with id {} delete friend with id {}.", id, friendId);
     }
 
     @Override

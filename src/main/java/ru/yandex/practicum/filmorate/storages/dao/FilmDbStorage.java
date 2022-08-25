@@ -27,7 +27,6 @@ import java.util.*;
 @Repository
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final FriendshipStorage friendshipStorage;
 
     @Override
     public Film createFilm(Film film) {
@@ -35,7 +34,6 @@ public class FilmDbStorage implements FilmStorage {
                 "values(?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        log.info("wtf mpa id {}", film.getMpa().getId());
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"film_id"});
             stmt.setString(1, film.getName());
@@ -85,7 +83,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDuration(),
                 film.getId());
 
-        log.info("Film {} with id {} is updated database.", film.getName(), film.getId());
+        log.info("Film {} with id {} is updated in database.", film.getName(), film.getId());
 
         return film;
     }
@@ -100,8 +98,6 @@ public class FilmDbStorage implements FilmStorage {
                 "left outer join genres g on fg.genre_id=g.genre_id " +
                 "group by f.film_id, g.genre_id, m.mpa_id " +
                 "having f.film_id = ?";
-
-        // reviewer: genre тоже желательно джоинить одним запросом
 
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
 
@@ -136,7 +132,6 @@ public class FilmDbStorage implements FilmStorage {
                 if (newGenre != null && newGenre.getId() != 0) {
                     genreSet.add(newGenre);
                     resultFilm.setGenres(genreSet);
-                    log.info("add newgenre with id {}", newGenre.getId());
                 }
 
                 count = filmId;
@@ -148,7 +143,6 @@ public class FilmDbStorage implements FilmStorage {
                     Set<Genre> updatedGenreSet = resultFilm.getGenres();
                     updatedGenreSet.add(newGenre);
                     resultFilm.setGenres(updatedGenreSet);
-                    log.info("add newgenre with id {}", newGenre.getId());
                 }
             }
             resultFilmSet.add(resultFilm);
@@ -190,6 +184,4 @@ public class FilmDbStorage implements FilmStorage {
 
         return makeFilm(rowSet);
     }
-
-
 }

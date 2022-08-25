@@ -99,7 +99,7 @@ public class FilmService {
         Mpa resultMpa = mpaStorage.getMpaById(mpaId);
 
         if (resultMpa == null) {
-            throw new SubstanceNotFoundException(String.format("Mpa not found in database.", mpaId));
+            throw new SubstanceNotFoundException(String.format("Mpa with %d not found in database.", mpaId));
         }
 
         return resultMpa;
@@ -131,11 +131,11 @@ public class FilmService {
 
     private void validateId(Long filmId, Long userId) {
         if (userId <= 0 || userId == null) {
-            throw new SubstanceNotFoundException(String.format("User is not found.", userId));
+            throw new SubstanceNotFoundException(String.format("User with id %d is not found.", userId));
         }
 
         if (filmId <= 0 || filmId == null) {
-            throw new SubstanceNotFoundException(String.format("User is not found.", userId));
+            throw new SubstanceNotFoundException(String.format("Film with id %d is not found.", userId));
         }
     }
 }

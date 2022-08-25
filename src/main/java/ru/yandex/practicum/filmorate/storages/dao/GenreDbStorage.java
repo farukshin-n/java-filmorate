@@ -42,7 +42,7 @@ public class GenreDbStorage implements GenreStorage {
         for (Genre genre : film.getGenres()) {
             jdbcTemplate.update(sqlUpdateGenresQuery, film.getId(), genre.getId());
         }
-        log.info("Updated genre list of film with id {}", film.getId());
+        log.info("Updated genre list of film with id {}.", film.getId());
         return film;
     }
 
@@ -56,7 +56,7 @@ public class GenreDbStorage implements GenreStorage {
         List<Genre> genreList = jdbcTemplate.query(sqlQuery, this::makeGenre, film.getId());
 
         film.setGenres(new LinkedHashSet<>(genreList));
-        log.info("Set genre list to film with id {}", film.getId());
+        log.info("Set genre list to film with id {}.", film.getId());
     }
 
     private Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {
